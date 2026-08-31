@@ -178,12 +178,14 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
           <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
             <div style={{ flex: '1 1 240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <Sparkline points={detail.bondHistory.map((p) => p.price)} aria-label={t('priceHistory')} />
+              <span style={{ fontFamily: 'var(--font-data)', fontSize: 'var(--type-data)', fontWeight: 600, color: 'var(--ink)' }}>{detail.bondHistory.length > 0 ? formatMoney(detail.bondHistory[detail.bondHistory.length - 1].price) : '—'}</span>
               <span style={{ fontFamily: 'var(--font-data)', fontSize: 'var(--type-fine)', color: 'var(--ink-40)' }}>
                 {t('priceLabel')}
               </span>
             </div>
             <div style={{ flex: '1 1 240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <Sparkline points={detail.bondHistory.map((p) => p.yield)} aria-label={t('yieldHistory')} />
+              <span style={{ fontFamily: 'var(--font-data)', fontSize: 'var(--type-data)', fontWeight: 600, color: 'var(--ink)' }}>{detail.bondHistory.length > 0 ? `${detail.bondHistory[detail.bondHistory.length - 1].yield.toFixed(2)}%` : '—'}</span>
               <span style={{ fontFamily: 'var(--font-data)', fontSize: 'var(--type-fine)', color: 'var(--ink-40)' }}>
                 {t('yieldLabel')}
               </span>
