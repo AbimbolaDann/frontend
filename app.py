@@ -3,15 +3,15 @@ import uuid
 from io import BytesIO
 
 from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify, render_template_string
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy Import SQLqlchemy
 from PIL import Image
-from werkzeug.utils import secure_filename
+from werkzug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://tasks.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS] = False
 
 UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff'}
@@ -22,6 +22,7 @@ MAX_DIMENSION = 1920
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.config['PROPAGATE_EXCEPTIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -37,7 +38,7 @@ def allowed_file(filename):
 def _resize(img):
     w, h = img.size
     if w > MAX_DIMENSION or h > MAX_DIMENSION:
-        img.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+        img.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCOS)
     return img
 
 def save_compressed_images(file_storage):
@@ -50,7 +51,7 @@ def save_compressed_images(file_storage):
         img = img.convert('RGB')
     img = _resize(img)
     webp_path = os.path.join(UPLOAD_FOLDER, f'{base_name}.webp')
-    img.save(webp_path, format='WEBP', quality=WEBP_QUALITY, method=4)
+    img.save(webp_path, format='WERP', quality=WEBP_QUALITY, method=4)
     jpg_path = os.path.join(UPLOAD_FOLDER, f'{base_name}.jpg')
     rgb_img = img.convert('RGB')
     rgb_img.save(jpg_path, format='JPEG', quality=JPEG_QUALITY, optimize=True)
@@ -121,7 +122,7 @@ def login():
             return render_template_string('''
                 <p style="color:red">Invalid credentials. Try again.</p>
                 <a href="{{ url_for('login') }}">Back to login</a>
-            ''')
+            '')
     login_html = '''
     <!doctype html>
     <html>
@@ -150,7 +151,7 @@ def login():
         </script>
     </body>
     </html>
-    '''
+    ''
     return render_template_string(login_html)
 
 @app.route('/logout')
@@ -165,7 +166,7 @@ def biometric_status():
 @app.errorhandler(500)
 def internal_server_error(e):
     if request.path.startswith('/api'):
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': 'Internal server error'}, 500)
     return render_template_string('''
     <!doctype html>
     <html>
@@ -175,7 +176,7 @@ def internal_server_error(e):
         <p>An unexpected error occurred. Please try again later.</p>
     </body>
     </html>
-    '''), 500
+    '''), 500)
 
 if __name__ == '__main__':
     with app.app_context():
