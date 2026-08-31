@@ -20,10 +20,11 @@ const DATE_REGEXES = [
  */
 export function hasMaliciousContent(value: string): boolean {
   const htmlTag = /<[^>]*>/i;
-  const jsProtocol = /javascript\s*/i;
-  const eventHandler = /\sonw\w+=/i;
-  const sqlInjection = /(['\"]\s*--)|(;\s*(?:drop|delete|insert|update|select)\s)|(\b(?:union)\b.*\b(?:select|all)\b.*\b(?:from)\b)|\/\*.*\*\//i;
-  return htmlTag.test(value) || jsProtocol.test(value) || eventHandler.test(value) || sqlInjection.test(value);
+  const jsProtocol = /javascript\s*:/i;
+  const eventHandler = /(?:\s|^)on\w+\s*=/i;
+  const htmlEntity = /&(?:lt|gt|#0*60|#0*62|#x0*3[cCE]|#x0*3[eE]);/i;
+  const sqlInjection = /(['<g;]\s*--)|(;\s*(?:drop|delete|insert|update|select)\s)|(\b(?:union)\b.*\b(?:select|all)\b.*\b(?:from)\b)|(\/\.*\/)|(?:['<';\states:\\s*['\\d])/i;
+  return htmlTag.test(value) || jsProtocol.test(value) || eventHandler.test(value) || htmlEntity.test(value) || sqlInjection.test(value);
 }
 
 function escapeHtml(value: string): string {
@@ -33,7 +34,7 @@ function escapeHtml(value: string): string {
       case '<': return '&lt;';
       case '>': return '&gt;';
       case '"': return '&quot;';
-      case "'': return '&#39;';
+      case "'": return '&#39;';
       default: return c;
     }
   });
