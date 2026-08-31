@@ -4,26 +4,50 @@
  */
 
 const ERROR_CODE_MAP: Record<string, string> = {
-  insufficient_balance: 'Not enough funds — your balance is too low for this amount.',
-  insufficient_funds: 'Not enough funds — your balance is too low for this amount.',
+  insufficient_balance: 'Not enough funds - your balance is too low for this amount.',
+  insufficient_funds: 'Not enough funds - your balance is too low for this amount.',
   amount_too_low: 'Enter an amount of at least 1 USDC.',
-  amount_exceeds_balance: 'Not enough funds — try a smaller amount or use Max.',
+  amount_exceeds_balance: 'Not enough funds - try a smaller amount or use Max.',
   invalid_amount: 'Please enter a valid amount.',
   wallet_not_connected: 'Please connect your wallet first.',
-  timeout: 'Connection timed out — please try again.',
-  network_error: 'Network issue — please check your connection and try again.',
-  simulation_failed: 'Could not estimate the transaction — please try again.',
-  tx_failed: 'Transaction did not go through — please try again.',
-  internal_server_error: 'We are having trouble right now — please try again shortly.',
-  server_error: 'We are having trouble right now — please try again shortly.',
-  internal_error: 'Something went wrong on our side — please try again.',
-  unexpected_error: 'Something went wrong — please try again.',
+  timeout: 'Connection timed out - please try again.',
+  network_error: 'Network issue - please check your connection and try again.',
+  simulation_failed: 'Could not estimate the transaction - please try again.',
+  tx_failed: 'Transaction did not go through - please try again.',
+  internal_server_error: 'We are having trouble right now - please try again shortly.',
+  server_error: 'We are having trouble right now - please try again shortly.',
+  internal_error: 'Something went wrong on our side - please try again.',
+  unexpected_error: 'Something went wrong - please try again.',
+  '500': 'We are having trouble right now - please try again shortly.',
+  '502': 'We are having trouble right now - please try again shortly.',
+  '503': 'We are having trouble right now - please try again shortly.',
 }
 
-const FALLBACK_MESSAGE = 'Something went wrong — please try again.'
+const FALLBACK_MESSAGE = 'Something went wrong - please try again.'
 
 function normalizeCode(code: string): string {
   return code.trim().toLowerCase().replace(/[\s-]+/g, '_')
+}
+
+function extractCodeFromError(error: unknown): string | null {
+  if (!error || typeof error !== 'object') return null;
+  const obj = error as Record<string, any>;
+  // If it looks like an Axios/Axios-like error with a response
+  if (obj.response) {
+    const data = obj.response.data;
+    if (data && typeof data === 'object') {
+      if (typeof data.code === 'string') return data.code;
+      if (typeof data.message === 'string') return data.message;
+    } else if (typeof data === 'string' && data.trim()) {
+      return data;
+    }
+    const status = obj.response.status;
+    if (typeof status === 'number') return String(status);
+  }
+  // Direct code or message property
+  if (typeof obj.code === 'string') return obj.code;
+  if (typeof obj.message === 'string') return obj.message;
+  return null;
 }
 
 export function getFriendlyErrorMessage(codeOrMessage: string): string {
@@ -34,7 +58,9 @@ export function getFriendlyErrorMessage(codeOrMessage: string): string {
 }
 
 export function parseAndFriendlyError(error: unknown): string {
-  if (error instanceof Error) return getFriendlyErrorMessage(error.message)
-  if (typeof error === 'string') return getFriendlyErrorMessage(error)
+  const code = extractCodeFromError(error);
+  if (code) return getFriendlyErrorMessage(code);
+  if (error instanceof Error) return getFriendlyErrorMessage(error.message);
+  if (typeof error === 'string') return getFriendlyErrorMessage(error);
   return FALLBACK_MESSAGE
 }
