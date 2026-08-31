@@ -31,7 +31,7 @@ export async function getProjects(): Promise<Project[]> {
 	if (!API_URL) return HB_DATA.projects
 	try {
 		const res = await fetch(`${API_URL}/projects`)
-		if (!res.ok) throw new ApiError('Unable to load projects. Please try again later'.)
+		if (!res.ok) throw new ApiError('Unable to load projects. Please try again later.')
 		return (await res.json()) as Project[]
 	} catch (error) {
 		if (error instanceof ApiError) throw error
@@ -106,7 +106,6 @@ export async function biometricLogin(): Promise<boolean> {
 	}
 
 	try {
-		// Generate a random challenge (in production, this would come from the server)
 		const challenge = new Uint8Array(32)
 		crypto.getRandomValues(challenge)
 
