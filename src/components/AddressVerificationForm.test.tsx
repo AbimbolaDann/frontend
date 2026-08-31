@@ -16,13 +16,26 @@ describe('AddressVerificationForm', () => {
     expect(screen.getByText('Street address contains invalid characters')).toBeInDocument()
   })
 
+  it('does not submit when address contains SQL injection payload', () => {
+    const onSubmit = vi.fn()
+    render(<AddressVerificationForm onSubmit={onSubmit} />)
+    fireEvent.change(screen.getByLabelText('Street address *'), { target: { value: "'; DROP TABLE users; --" } })
+    fireEvent.change(screen.getByLabelText('City *'), { target: { value: 'Springfield' } })
+    fireEvent.change(screen.getByLabelText('State / Province *'), { target: { value: 'IL' } })
+    fireEvent.change(screen.getByLabelText('ZIP / Postal code *'), { target: { value: '62701' } })
+    fireEvent.change(screen.getByLabelText('Country *'), { target: { value: 'US' } })
+    fireEvent.click(screen.getByText('Verify address'))
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByText('Street address contains invalid characters')).toBeInDocument()
+  })
+
   it('submits valid address', () => {
     const onSubmit = vi.fn()
     render(<AddressVerificationForm onSubmit={onSubmit} />)
     fireEvent.change(screen.getByLabelText('Street address *'), { target: { value: '123 Main St' } })
     fireEvent.change(screen.getByLabelText('City *'), { target: { value: 'Springfield' } })
     fireEvent.change(screen.getByLabelText('State / Province *'), { target: { value: 'IL' } })
-    fireEvent.change(screen.getByLabelText('ZIP \/ Postal code *'), { target: { value: '62701' } })
+    fireEvent.change(screen.getByLabelText('ZIP / Postal code *'), { target: { value: '62701' } })
     fireEvent.change(screen.getByLabelText('Country *'), { target: { value: 'US' } })
     fireEvent.click(screen.getByText('Verify address'))
     expect(onSubmit).toHaveBeenCalled()
