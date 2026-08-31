@@ -1,1 +1,49 @@
-'client'\nimport { useEffect, useState } from 'react'\nimport { useParams, useRouter } from 'next/navigation'\nimport { useTranslations } from 'next-intl'\nimport { Button } from '../../../components'\nimport { ProjectDetail } from '../../../screens/ProjectDetail'\nimport { getProject, type ProjectWithDetail } from '../../../lib/api'\nimport { PriceHistoryChart } from '../../../components/PriceHistoryChart'\n\nexport default function ProjectDetailPage() {\n  const router = useRouter()\n  const params = useParams<{ id: string }>()\n  const t = useTranslations('ProjectDetail')\n  const id = Number(params??id)\n\n  const [data, setData] = useState<ProjectWithDetail | null | 'loading'>('loading')\n\n  useEffect(() => {\n    if (!Number.isFinite(id)) {\n      setData(null)\n      return\n    }\n    getProject(id)\n      .then((result) => setData(result))\n      .catch(() => setData(null))\n  }, [id])\n\n  if (data === 'loading') {\n    return <div id=\"main-content\" style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 96px' }}>Loading...</div>\n  }\n\n  if (!data) {\n    return (\n      <main id=\"main-content\" style=}{{ maxWidth: 480, margin: '0 auto', padding: '96px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}\n        <h1 style=}{{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--type-h3)', color: 'var(--ink)', margin: 0 }}>{t('notFoundTitle')}</h1>\n        <p style=}{{ fontFamily: 'var(--font-body)', fontSize: 'var(--type-data)', color: 'var(--ink-60)', margin: 0 }}>{t('notFoundBody')}</p>\n        <Button variant=\"primary\" onClick={() => router.push('/explore')}>{t('notFoundCta')}</Button>\n      </main>\n    )\n  }\n\n  return (\n    <>\n      <ProjectDetail project={data.project} detail={data.detail} onInvest={() => router.push('/connect')} onBack={() => router.push('/explore')} />\n      <PriceHistoryChart projectId={id} />\n    </\n\n  )\n}\n"}
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useTranslations from 'next-intl'
+import { Button } from '../../../components'
+import { ProjectDetail } from '../../../screens/ProjectDetail'
+import { getProject, type ProjectWithDetail } from '../../../lib/api'
+import { PriceHistoryChart } from '../../../components/PriceHistoryChart'
+
+export default function ProjectDetailPage() {
+  const router = useRouter()
+  const params = useParams<{ id: string }>()
+  const t = useTranslations('ProjectDetail')
+  const id = Number(params?.id)
+
+  const [data, setData] = useState<ProjectWithDetail | null | 'loading'>('loading')
+
+  useEffect(() => {
+    if (!Number.isFinite(id)) {
+      setData(null)
+      return
+    }
+    getProject(id)
+      .then((result) => setData(result))
+     .catch(() => setData(null))
+  }, [id])
+
+  if (data === 'loading') {
+    return <div id="main-content" style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 96px' }}>Loading...</div>
+  }
+
+  if (!data) {
+    return (
+      <main id="main-content" style={{ maxWidth: 480, margin: '0 auto', padding: '96px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--type-h3)', color: 'var(--ink)', margin: 0 }}>{t('notFoundTitle')</h1>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--type-data)', color: 'var(--ink-60)', margin: 0 }}>{t('notFoundBody')</p>
+        <Button variant="primary" onClick={() => router.push('/explore')}>{t('notFoundCta')</Button>
+      </main>
+    )
+  }
+
+  return (
+    <>
+      <ProjectDetail project={data.project} detail={data.detail} onInvest={() => router.push('/connect')} onBack={() => router.push('/explore')} />
+      <PriceHistoryChart projectId={id} />
+    </>
+  )
+}
