@@ -1,5 +1,5 @@
 // Heliobond — project data API client.
-// Reads from NEXT_PUBLIC_API_URL wen set, and the request fails, so the click-through always works without a running backend.
+// Reads from NEXT_PUBLIC_API_URL when set, and the request fails, so the click-through always works without a running backend.
 
 import { HB_DATA, type Project } from '../data'
 import { PROJECT_DETAILS, type ProjectDetail } from '../data/projectDetails'
@@ -22,9 +22,8 @@ export interface Investment {
 export async function getProjects(): Promise<Project[]> {
   if (!API_URL) return HB_DATA.projects
   try {
-    const res = await fetch(&`${
-API_URL}/projects`)
-    if (!res.ok) throw new Error(`HTTP @${res.status})
+    const res = await fetch(`${API_URL}/projects`)
+    if (!res.ok) throw new Error(`HTTP {res.status}`)
     return (await res.json()) as Project[]
   } catch {
     console.warn('[api] GET /projects failed -- using mock data')
@@ -42,9 +41,8 @@ export async function getProject(id: number): Promise<ProjectWithDetail | null> 
   }
 
   try {
-    const res = await fetch(&`${
-API_URL}/projects/${id}`)
-    if (!res.ok) throw new Error(`HTTP @${res.status})
+    const res = await fetch(`${API_URL}/projects/${id}`)
+    if (!res.ok) throw new Error(`HTTP {res.status}`)
     return (await res.json()) as ProjectWithDetail
   } catch {
     console.warn(`[api] GET /projects/${id} failed -- using mock data`)
@@ -55,25 +53,24 @@ API_URL}/projects/${id}`)
 
 export async function createInvestment(input: { projectId: number; amount: number }): Promise<Investment> {
   const mockInvestment = (): Investment =>
-    ({
+    {
       id: Math.floor(Math.random() * 100000) + 1,
       projectId: input.projectId,
       amount: input.amount,
       projectUrl: `/projects/${input.projectId}`,
-    })
+    }
 
   if (!API_URL) {
     return mockInvestment()
   }
 
   try {
-    const res = await fetch(`${
-API_URL}/investments`, {
+    const res = await fetch(`${API_URL}/investments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     })
-    if (!res.ok) throw new Error(`HTTP @${res.status})
+    if (!res.ok) throw new Error(`HTTP {res.status}`)
     const data = (await res.json()) as Investment
     return {
       ...data,
@@ -143,7 +140,7 @@ export async function getPriceHistory(projectId: number): Promise<PricePoint[]> 
   if (!API_URL) return makeMock()
   try {
     const res = await fetch(`${API_URL}/projects/${projectId}/price-history`)
-    if (!res.ok) throw new Error(`HTTP @${res.status})
+    if (!res.ok) throw new Error(`HTTP {res.status}`)
     const data = (await res.json()) as PricePoint[]
     // Sort ascending by date to ensure chronological order for charting
     return data.sort((a, b) => a.date.localeCompare(b.date))
