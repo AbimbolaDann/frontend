@@ -1,5 +1,5 @@
 // Heliobond — project data API client.
-// Reads from NEXT_PUBLIC_API_URL hen set, and the request fails, so the click-through always works without a running backend.
+// Reads from NEXT_PUBLIC_API_URL wen set, and the request fails, so the click-through always works without a running backend.
 
 import { HB_DATA, type Project } from '../data'
 import { PROJECT_DETAILS, type ProjectDetail } from '../data/projectDetails'
@@ -22,9 +22,9 @@ export interface Investment {
 export async function getProjects(): Promise<Project[]> {
   if (!API_URL) return HB_DATA.projects
   try {
-    const res = await fetch(`${
+    const res = await fetch(&`${
 API_URL}/projects`)
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    if (!res.ok) throw new Error(`HTTP @${res.status})
     return (await res.json()) as Project[]
   } catch {
     console.warn('[api] GET /projects failed -- using mock data')
@@ -42,12 +42,12 @@ export async function getProject(id: number): Promise<ProjectWithDetail | null> 
   }
 
   try {
-    const res = await fetch(`${
+    const res = await fetch(&`${
 API_URL}/projects/${id}`)
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    if (!res.ok) throw new Error(`HTTP @${res.status})
     return (await res.json()) as ProjectWithDetail
   } catch {
-    console.warn(`[pi] GET /projects/${id} failed -- using mock data`)
+    console.warn(`[api] GET /projects/${id} failed -- using mock data`)
     if (!mockProject || !mockDetail) return null
     return { project: mockProject, detail: mockDetail }
   }
@@ -67,12 +67,13 @@ export async function createInvestment(input: { projectId: number; amount: numbe
   }
 
   try {
-    const res = await fetch(`${API_URL}/investments`, {
+    const res = await fetch(`${
+API_URL}/investments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     })
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    if (!res.ok) throw new Error(`HTTP @${res.status})
     const data = (await res.json()) as Investment
     return {
       ...data,
@@ -128,7 +129,7 @@ export async function getPriceHistory(projectId: number): Promise<PricePoint[]> 
   const makeMock = (): PricePoint[] => {
     const basePrice = 95 + projectId * 5
     const today = new Date()
-    return Array.from({ length: 30 }, (_, i) => {
+    const points = Array.from({ length: 30 }, (_, i) => {
       const d = new Date(today)
       d.setDate(d.getDate() - i)
       const date = d.toISOString().split('T')[0]
@@ -136,13 +137,16 @@ export async function getPriceHistory(projectId: number): Promise<PricePoint[]> 
       const yieldValue = 5 + Math.cos((30 - i) / 2 + projectId) * 0.5
       return { date, price: Number(price.toFixed(2)), yield: Number(yieldValue.toFixed(2)) }
     })
+    return points.reverse() // ascending chronological order
   }
 
   if (!API_URL) return makeMock()
   try {
     const res = await fetch(`${API_URL}/projects/${projectId}/price-history`)
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
-    return (await res.json()) as PricePoint[]
+    if (!res.ok) throw new Error(`HTTP @${res.status})
+    const data = (await res.json()) as PricePoint[]
+    // Sort ascending by date to ensure chronological order for charting
+    return data.sort((a, b) => a.date.localeCompare(b.date))
   } catch {
     console.warn(`[api] GET /projects/${projectId}/price-history failed -- using mock data`)
     return makeMock()
