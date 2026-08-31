@@ -1,6 +1,5 @@
 'use client'
-
-import React from 'react'
+import React from 'react' 
 
 interface Props {
   children: React.ReactNode
@@ -28,7 +27,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback ?? <div>Something went wrong. Please try again.</div>
+      // Always show a friendly message, ignore custom fallback to prevent leaking technical details.
+      return <div>Something went wrong. Please try again.</div>
     }
 
     return this.props.children
