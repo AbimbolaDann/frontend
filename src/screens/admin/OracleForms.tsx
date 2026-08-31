@@ -339,3 +339,28 @@ const panelBodyStyle: CSSProperties = {
   flexDirection: 'column',
   gap: 'var(--form-gap)',
 }
+
+if (import.meta.vitest) {
+  const { describe, it, expect } = await import('vitest')
+
+  describe('OracleForms validation security', () => {
+    it.each([
+      '<script>alert("xss")</script>',
+      "' OR '1'='1",
+      '1; DROP TABLE projects--',
+      '1e3',
+      '-1',
+      '101',
+      '0x10',
+      '',
+    ])('rejects malicious or malformed score: %s', (input) => {
+      expect(isSafeScore(input)).toBe(false)
+    })
+
+    it('accepts valid score boundaries', () => {
+      expect(isSafeScore('0')).toBe(true)
+      expect(isSafeScore('100')).toBe(true)
+      expect(isSafeScore('50.5')).toBe(true)
+    })
+  })
+}
