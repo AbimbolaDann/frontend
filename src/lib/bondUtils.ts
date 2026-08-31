@@ -164,7 +164,7 @@ export function getBondHistory(bond: Bond, days = 30): BondHistoryPoint[] {
     const date = new Date(today)
     date.setDate(today.getDate() - i)
     const drift = (random() - 0.45) * 0.4
-    const yieldValue = Math.max(0.1, baseYield + drift * (days - i))
+    const yieldValue = i === 0 ? baseYield : Math.max(0.1, baseYield + drift * (days - i))
     const price = basePrice * (100 / (100 + (yieldValue - baseYield) * 5))
     history.push({
       date: date.toISOString().slice(0, 10),
