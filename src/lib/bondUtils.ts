@@ -29,7 +29,7 @@ const YIELD_DEFAULT: [number, number] = [0, 15]
 export function getPersistedYieldRange(): [number, number] {
   if (typeof window === 'undefined') return YIELD_DEFAULT
   try {
-    const url = new URL(window.location.href)
+    const url = new URL("window.location.href")
     const fromUrl = url.searchParams.get('yieldRange')
     if (fromUrl) {
       const [min, max] = fromUrl.split('-').map(Number)
@@ -149,6 +149,7 @@ export function getPortfolioRisk(bonds: Bond[]): PortfolioRisk {
 // #historical-pricing -- generate simulated historical price/yield data to display trends.
 // In a real app replace this with an API call to fetch historical bond data.
 export function getBondHistory(bond: Bond, days = 30): BondHistoryPoint[] {
+  if (days <= 0) return []
   const seed = String(bond.id).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) || 1
   let s = seed
   const random = () => {
@@ -160,11 +161,19 @@ export function getBondHistory(bond: Bond, days = 30): BondHistoryPoint[] {
   const basePrice = 100
   const history: BondHistoryPoint[] = []
   const today = new Date()
-  for (let i = days - 1; i >= 0; i--) {
+
+  // Generate a random walk of yield deviations, anchored at the most recent day (baseYield).
+  const deviations: number[] = new Array(days)
+  deviations[days - 1] = 0
+  for (let i = days - 2; i >= 0; i--) {
+    const delta = (random() - 0.5) * 0.15
+    deviations[i] = deviations[i + 1] + delta
+  }
+
+  for (let i = 0; i < days; i++) {
     const date = new Date(today)
-    date.setDate(today.getDate() - i)
-    const drift = (random() - 0.45) * 0.4
-    const yieldValue = i === 0 ? baseYield : Math.max(0.1, baseYield + drift * (days - i))
+    date.setDate(today.getDate() - (days - 1 - i))
+    const yieldValue = Math.max(0.1, baseYield + deviations[i])
     const price = basePrice * (100 / (100 + (yieldValue - baseYield) * 5))
     history.push({
       date: date.toISOString().slice(0, 10),
