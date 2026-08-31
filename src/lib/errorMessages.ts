@@ -14,6 +14,10 @@ const ERROR_CODE_MAP: Record<string, string> = {
   network_error: 'Network issue — please check your connection and try again.',
   simulation_failed: 'Could not estimate the transaction — please try again.',
   tx_failed: 'Transaction did not go through — please try again.',
+  internal_server_error: 'We are having trouble right now — please try again shortly.',
+  server_error: 'We are having trouble right now — please try again shortly.',
+  internal_error: 'Something went wrong on our side — please try again.',
+  unexpected_error: 'Something went wrong — please try again.',
 }
 
 const FALLBACK_MESSAGE = 'Something went wrong — please try again.'
