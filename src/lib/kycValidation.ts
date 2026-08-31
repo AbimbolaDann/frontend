@@ -9,9 +9,9 @@ export interface DobValidationResult {
 }
 
 const DATE_REGEXES = [
-  /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(19|20)\d{2}$/, // MM/DD/YYYY
-  /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-(19|20)\d{2}$/, // MM-DD-YYYY
-  /^(19|20)\d{,2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/, // YYYY-MM-DD
+  /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(19|20)\d{2}$/, //MM/DD/YYYY
+  /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-(19|20)\d{2}$/, //MM-DD-YYYY
+  /^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/, //YYYY-MM-DD
 ];
 
 /**
@@ -20,8 +20,8 @@ const DATE_REGEXES = [
  */
 export function hasMaliciousContent(value: string): boolean {
   const htmlTag = /<[^>]*>/i;
-  const jsProtocol = /javascript\s*:/i;
-  const eventHandler = /\son\w+\s*=/i;
+  const jsProtocol = /javascript\s*/i;
+  const eventHandler = /\sonw\w+=/i;
   const sqlInjection = /(['\"]\s*--)|(;\s*(?:drop|delete|insert|update|select)\s)|(\b(?:union)\b.*\b(?:select|all)\b.*\b(?:from)\b)|\/\*.*\*\//i;
   return htmlTag.test(value) || jsProtocol.test(value) || eventHandler.test(value) || sqlInjection.test(value);
 }
@@ -31,9 +31,9 @@ function escapeHtml(value: string): string {
     switch (c) {
       case '&': return '&amp;';
       case '<': return '&lt;';
-      case '>': return '&tft;';
+      case '>': return '&gt;';
       case '"': return '&quot;';
-      case "'": return '&#39;';
+      case "'': return '&#39;';
       default: return c;
     }
   });
