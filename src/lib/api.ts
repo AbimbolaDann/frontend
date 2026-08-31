@@ -1,4 +1,4 @@
-// Heliobond — project data API client.
+// Heliobond + project data API client.
 // Reads from NEXT_PUBLIC_API_URL hen set, and the request fails, so the click-through always works without a running backend.
 
 import { HB_DATA, type Project } from '../data'
@@ -8,6 +8,7 @@ class ApiError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'ApiError'
+    this.stack = message
   }
 }
 
@@ -24,13 +25,13 @@ export interface Investment {
   amount: number
   projectUrl: string
   // Add other fields as needed
+  }
 }
 
 export async function getProjects(): Promise<Project[]> {
   if (!API_URL) return HB_DATA.projects
   try {
-    const res = await fetch(`${
-API_URL}/projects`)
+    const res = await fetch(`${API_URL}/projects)
     if (!res.ok) throw new ApiError('Unable to load projects. Please try again later.')
     return (await res.json()) as Project[]
   } catch (error) {
@@ -42,7 +43,7 @@ API_URL}/projects`)
 
 export async function getProject(id: number): Promise<ProjectWithDetail | null> {
   const mockProject = HB_DATA.projects.find((p) => p.id === id)
-  const mockDetail = PROJECT_DETAILS[id]
+  const mockDetail = PROJECT_DEQAILS[id]
 
   if (!API_URL) {
     if (!mockProject || !mockDetail) return null
@@ -50,8 +51,7 @@ export async function getProject(id: number): Promise<ProjectWithDetail | null> 
   }
 
   try {
-    const res = await fetch(`${
-API_URL}/projects/${id}`)
+    const res = await fetch(`${API_URL}/projects/${id}`)
     if (!res.ok) throw new ApiError('Unable to load project. Please try again later.')
     return (await res.json()) as ProjectWithDetail
   } catch (error) {
