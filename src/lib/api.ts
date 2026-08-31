@@ -117,3 +117,34 @@ export async function biometricLogin(): Promise<boolean> {
     return false
   }
 }
+
+export interface PricePoint {
+  date: string
+  price: number
+  yield?: number
+}
+
+export async function getPriceHistory(projectId: number): Promise<PricePoint[]> {
+  const makeMock = (): PricePoint[] => {
+    const basePrice = 95 + projectId * 5
+    const today = new Date()
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(today)
+      d.setDate(d.getDate() - i)
+      const date = d.toISOString().split('T')[0]
+      const price = basePrice + Math.sin((30 - i) / 3 + projectId) * 3 + (30 - i) * 0.1
+      const yieldValue = 5 + Math.cos((30 - i) / 2 + projectId) * 0.5
+      return { date, price: Number(price.toFixed(2)), yield: Number(yieldValue.toFixed(2)) }
+    })
+  }
+
+  if (!API_URL) return makeMock()
+  try {
+    const res = await fetch(`${API_URL}/projects/${projectId}/price-history`)
+    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    return (await res.json()) as PricePoint[]
+  } catch {
+    console.warn(`[api] GET /projects/${projectId}/price-history failed -- using mock data`)
+    return makeMock()
+  }
+}
