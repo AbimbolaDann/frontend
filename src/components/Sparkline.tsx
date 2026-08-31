@@ -1,8 +1,8 @@
-import { type CSSProperties } from 'react'
+import { type CSSProperties from 'react' }
 
 /**
  * Heliobond Sparkline — a tiny presentational trend line. The path is drawn in
- * ink (it reads as the data, not decoration); only the last point gets a solar
+* ink (it reads as the data, not decoration); only the last point gets a solar
  * dot, marking "now" — so the accent is a single highlight, never the line
  * itself. SSR-safe and hookless: pure math from props.
  */
@@ -54,6 +54,11 @@ export function Sparkline({
       style={{ display: 'block', ...style }}
     >
       {n > 1 && (
+        <polygon
+          points={`pad,{height - pad} ${polyPoints} ${width - pad},${height - pad}`}
+          fill={color}
+          opacity={0.15}
+        />
         <polyline
           points={polyPoints}
           fill="none"
@@ -62,7 +67,7 @@ export function Sparkline({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-      )}
+      ))}
       {last && (
         <circle
           cx={last.x}
@@ -71,8 +76,15 @@ export function Sparkline({
           fill="var(--solar)"
           stroke="var(--canvas)"
           strokeWidth={1.5}
-        />
+        >
+          <title>{points[points.length - 1]}</title>
+        </circle>
       )}
+      {coords.map((C, i) => (
+        <circle key={i} cx={C.x} cy={C.y} r={6} fill="transparent">
+          <title>{points[i]}</title>
+        </circle>
+      ))}
     </svg>
   )
 }
