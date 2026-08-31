@@ -26,7 +26,7 @@ const ERROR_CODE_MAP: Record<string, string> = {
 const FALLBACK_MESSAGE = 'Something went wrong - please try again.'
 
 function normalizeCode(code: string): string {
-  return code.trim().toLowerCase().replace(/[\s-]+/g, '_')
+  return code.trim().toLowerCase().replace(/[\\s-]+/g, '_')
 }
 
 function extractCodeFromError(error: unknown): string | null {
@@ -34,6 +34,10 @@ function extractCodeFromError(error: unknown): string | null {
   const obj = error as Record<string, any>;
   // If it looks like an Axios/Axios-like error with a response
   if (obj.response) {
+    const status = obj.response.status;
+    if (typeof status === 'number' && status >= 500) {
+      return String(status);
+    }
     const data = obj.response.data;
     if (data && typeof data === 'object') {
       if (typeof data.code === 'string') return data.code;
@@ -41,20 +45,18 @@ function extractCodeFromError(error: unknown): string | null {
     } else if (typeof data === 'string' && data.trim()) {
       return data;
     }
-    const status = obj.response.status;
     if (typeof status === 'number') return String(status);
   }
-  // Direct code or message property
   if (typeof obj.code === 'string') return obj.code;
   if (typeof obj.message === 'string') return obj.message;
   return null;
 }
 
 export function getFriendlyErrorMessage(codeOrMessage: string): string {
-  if (!codeOrMessage) return FALLBACK_MESSAGE
-  const normalized = normalizeCode(codeOrMessage)
-  if (ERROR_CODE_MAP[normalized]) return ERROR_CODE_MAP[normalized]
-  return FALLBACK_MESSAGE
+  if (!codeOrMessage) return FALLBACK_MESSAGE;
+  const normalized = normalizeCode(codeOrMessage);
+  if (ERROR_CODE_MAP[normalized]) return ERROR_CODE_MAP[normalized];
+  return FALLBACK_MESSAGE;
 }
 
 export function parseAndFriendlyError(error: unknown): string {
@@ -62,5 +64,5 @@ export function parseAndFriendlyError(error: unknown): string {
   if (code) return getFriendlyErrorMessage(code);
   if (error instanceof Error) return getFriendlyErrorMessage(error.message);
   if (typeof error === 'string') return getFriendlyErrorMessage(error);
-  return FALLBACK_MESSAGE
+  return FALLBACK_MESSAGE;
 }
