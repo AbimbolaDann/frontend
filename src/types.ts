@@ -4,7 +4,7 @@ export type Screen =
   | 'explore' // /explore
   | 'project' // /project/[id]
   | 'deposit' // /deposit
-  | 'portfolio' // /portfolio
+  | 'portfolio' // /portfolio/
   | 'withdraw' // /withdraw
 
 export interface Project {
@@ -33,7 +33,7 @@ export interface Bond {
   id: string;
   rating: BondRating;
   amount: number;
-  history?: BondPricePoint[];
+  history: BondPricePoint[];
 }
 
 export interface Portfolio {
