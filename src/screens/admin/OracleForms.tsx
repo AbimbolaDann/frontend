@@ -7,6 +7,11 @@ import { type RegistryEntry } from '@/data/admin'
 import { clampScore, validateScores } from './utils'
 import { formatMoney, parseAmount } from '@/lib/format'
 
+export function isSafeScore(value: string): boolean {
+  const n = Number(value)
+  return /^\d*\.?\d+$/.test(value) && Number.isFinite(n) && n >= 0 && n <= 100
+}
+
 /**
  * OracleForms — the two privileged write paths, side by side:
  *   1. Push score update — re-verify a project's credit + green on-chain.
@@ -35,7 +40,7 @@ export function OracleForms({ projects, liquid, onPushScores, onFund }: OracleFo
   const [fundId, setFundId] = useState(first)
   const [amount, setAmount] = useState('')
 
-  const scoresValid = validateScores(credit, green)
+  const scoresValid = isSafeScore(credit) && isSafeScore(green) && validateScores(credit, green)
 
   const amountN = parseAmount(amount)
   const fundValid = amountN > 0 && amountN <= liquid
