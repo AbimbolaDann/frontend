@@ -41,7 +41,7 @@ export interface Project {
    */
   status?: BondStatus
   /** Historical price/yield points for trend charts */
-  priceHistory?: PricePoint[]
+  priceHistory: PricePoint[]
 }
 
 export interface Activity {
