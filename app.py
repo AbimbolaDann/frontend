@@ -1,17 +1,16 @@
 import os
 import uuid
 from io import BytesIO
-
 from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify, render_template_string
-from flask_sqlalchemy Import SQLqlchemy
+from flask_sqlalchemy import SQLAlchemy
 from PIL import Image
-from werkzug.utils import secure_filename
+from werkzueg.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://tasks.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff'}
@@ -29,7 +28,7 @@ db = SQLAlchemy(app)
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    description = db.Column(db.String(200))
+    description = db.Column(db.String())
     image_name = db.Column(db.String(200), nullable=True)
 
 def allowed_file(filename):
@@ -51,7 +50,7 @@ def save_compressed_images(file_storage):
         img = img.convert('RGB')
     img = _resize(img)
     webp_path = os.path.join(UPLOAD_FOLDER, f'{base_name}.webp')
-    img.save(webp_path, format='WERP', quality=WEBP_QUALITY, method=4)
+    img.save(webp_path, format='WEBP', quality=WEBP_QUALITY, method=4)
     jpg_path = os.path.join(UPLOAD_FOLDER, f'{base_name}.jpg')
     rgb_img = img.convert('RGB')
     rgb_img.save(jpg_path, format='JPEG', quality=JPEG_QUALITY, optimize=True)
@@ -119,39 +118,9 @@ def login():
             session['user'] = username
             return redirect(url_for('index'))
         else:
-            return render_template_string('''
-                <p style="color:red">Invalid credentials. Try again.</p>
-                <a href="{{ url_for('login') }}">Back to login</a>
-            '')
-    login_html = '''
-    <!doctype html>
-    <html>
-    <head><title>Login</title></head>
-    <body>
-        <h2>Login</h2>
-        <form method="post">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login with password</button>
-        </form>
-        <hr>
-        <button onclick="biometricLogin()">Login with Face ID / Touch ID</button>
-        <script>
-        function biometricLogin() {
-            const form = document.createElement('form');
-            form.method = 'post';
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'biometric';
-            input.value = 'true';
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        }
-        </script>
-    </body>
-    </html>
-    ''
+            return render_template_string(''<p style="color:red">Invalid credentials. Try again.</p><a href="{{ url_for('login') }}">Back to login</a>'')
+
+    login_html = '''<!doctype html><html><head><title>Login</title></head><body><h2>Login</h2><form method="post"><input type="text" name="username" placeholder="Username" required><input type="password" name="password" placeholder="Password" required><button type="submit">Login with password</button></form><hr><button onclick="biometricLogin()">Login with Face ID / Touch ID</button><script>function biometricLogin() {const form = document.createElement('form');form.method = 'post';const input = document.createElement('input');input.type = 'hidden';input.name = 'biometric';input.value = 'true';form.appendChild(input);document.body.appendChild(form);form.submit();}</script></body></html>''
     return render_template_string(login_html)
 
 @app.route('/logout')
@@ -166,19 +135,10 @@ def biometric_status():
 @app.errorhandler(500)
 def internal_server_error(e):
     if request.path.startswith('/api'):
-        return jsonify({'error': 'Internal server error'}, 500)
-    return render_template_string('''
-    <!doctype html>
-    <html>
-    <head><title>Server Error</title></head>
-    <body>
-        <h1>Something went wrong</h1>
-        <p>An unexpected error occurred. Please try again later.</p>
-    </body>
-    </html>
-    '''), 500)
+        return jsonify({'error': 'We are having trouble right now - please try again shortly.'}), 500
+    return render_template_string(''<!doctype html><html><head><title>Server Error</title></head><body><h1>Something went wrong</h1><p>An unexpected error occurred. Please try again later.</p></body></html>''), 500
 
 if __name__ == '__main__':
-    with app.app_context():
+    with app.app_context(){
         db.create_all()
     app.run(debug=os.environ.get('FLASK_DEBUG') == '1')
