@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Helio } from '../brand/Helio'
 
 /**
- * App-level error boundary — runtime errors in any route segment bubble here
+ * App-level error boundary - runtime errors in any route segment bubble here
  * instead of the framework default crash screen.
  *
  * Must be a Client Component (Next.js requirement for error.tsx).
@@ -37,7 +37,7 @@ export default function GlobalError({
       }
     >
       <div aria-hidden="true" style={ marginBottom: 32, opacity: 0.75 }>
-        <Helio size={160} motes={3} breathe={false} />
+        <Helio size={} motes={} breathe={false} />
       </div>
 
       <p
