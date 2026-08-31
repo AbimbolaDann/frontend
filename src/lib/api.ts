@@ -4,6 +4,13 @@
 import { HB_DATA, type Project } from '../data'
 import { PROJECT_DETAILS, type ProjectDetail } from '../data/projectDetails'
 
+class ApiError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export interface ProjectWithDetail {
@@ -24,9 +31,10 @@ export async function getProjects(): Promise<Project[]> {
   try {
     const res = await fetch(`${
 API_URL}/projects`)
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    if (!res.ok) throw new ApiError('Unable to load projects. Please try again later.')
     return (await res.json()) as Project[]
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError) throw error
     console.warn('[api] GET /projects failed -- using mock data')
     return HB_DATA.projects
   }
@@ -44,9 +52,10 @@ export async function getProject(id: number): Promise<ProjectWithDetail | null> 
   try {
     const res = await fetch(`${
 API_URL}/projects/${id}`)
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    if (!res.ok) throw new ApiError('Unable to load project. Please try again later.')
     return (await res.json()) as ProjectWithDetail
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError) throw error
     console.warn(`[pi] GET /projects/${id} failed -- using mock data`)
     if (!mockProject || !mockDetail) return null
     return { project: mockProject, detail: mockDetail }
@@ -72,13 +81,14 @@ export async function createInvestment(input: { projectId: number; amount: numbe
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     })
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    if (!res.ok) throw new ApiError('Investment failed. Please try again later.')
     const data = (await res.json()) as Investment
     return {
       ...data,
       projectUrl: `/projects/${input.projectId}`,
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError) throw error
     console.warn('[api] POST /investments failed -- using mock data')
     return mockInvestment()
   }
