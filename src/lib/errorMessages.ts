@@ -26,17 +26,7 @@ export function getFriendlyErrorMessage(codeOrMessage: string): string {
   if (!codeOrMessage) return FALLBACK_MESSAGE
   const normalized = normalizeCode(codeOrMessage)
   if (ERROR_CODE_MAP[normalized]) return ERROR_CODE_MAP[normalized]
-  // If message already looks friendly (contains spaces and no underscores), return as-is
-  if (!codeOrMessage.includes('_') && codeOrMessage.length > 10) return codeOrMessage
-  // Try to humanize snake_case codes
-  if (codeOrMessage.includes('_')) {
-    return codeOrMessage
-      .split('_')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ')
-      + ' — please try again.'
-  }
-  return codeOrMessage
+  return FALLBACK_MESSAGE
 }
 
 export function parseAndFriendlyError(error: unknown): string {
