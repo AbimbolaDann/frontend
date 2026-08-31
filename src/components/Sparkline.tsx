@@ -1,4 +1,4 @@
-import { type CSSProperties } from 'react'
+import { memo, type CSSProperties } from 'react'
 
 /**
  * Heliobond Sparkline — a tiny presentational trend line. The path is drawn in
@@ -16,7 +16,7 @@ export interface SparklineProps {
   style?: CSSProperties
 }
 
-export function Sparkline({
+function Sparkline({
   points,
   width = 132,
   height = 36,
@@ -41,7 +41,7 @@ export function Sparkline({
     return { x, y }
   })
 
-  const polyPoints = coords.map((c) => `${c.x.toFixed(2)}'${c.y.toFixed(2)}`).join(' ')
+  const polyPoints = coords.map((c) => `${c.x.toFixed(2)},${c.y.toFixed(2)}`).join(' ')
   const last = coords[coords.length - 1]
 
   return (
@@ -50,7 +50,7 @@ export function Sparkline({
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label{;ariaLabel}
+      aria-label={ariaLabel}
       style={{ display: 'block', ...style }}
     >
       {n > 1 && (
@@ -69,7 +69,7 @@ export function Sparkline({
             strokeLinejoin="round"
           />
         </>
-      )
+      )}
       {last && (
         <circle
           cx={last.x}
@@ -81,14 +81,29 @@ export function Sparkline({
         >
           <title>{points[points.length - 1]}</title>
         </circle>
-      )
+      )}
       {coords.map((C, i) => (
         <circle key={i} cx={C.x} cy={C.y} r={6} fill="transparent">
           <title>{points[i]}</title>
         </circle>
-      ))
+      ))}
     </svg>
   )
 }
 
-export default Sparkline
+function areEqual(prevProps: SparklineProps, nextProps: SparklineProps): boolean {
+  return (
+    prevProps.width === nextProps.width &&
+    prevProps.height === nextProps.height &&
+    prevProps.color === nextProps.color &&
+    prevProps['aria-label'] === nextProps['aria-label'] &&
+    prevProps.style === nextProps.style &&
+    prevProps.points.length === nextProps.points.length &&
+    prevProps.points.every((value, index) => value === nextProps.points[index])
+  )
+}
+
+const MemoizedSparkline = memo(Sparkline, areEqual)
+
+export { MemoizedSparkline as Sparkline }
+export default MemoizedSparkline

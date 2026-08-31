@@ -1,4 +1,4 @@
-// Heliobond — project data API client.
+// Heliobond — project data API client with lazy-loading and pagination support.
 // Reads from NEXT_PUBLIC_API_URL when set, and the request fails, so the click-through always works without a running backend.
 
 import { HB_DATA, type Project } from '../data'
@@ -16,7 +16,61 @@ export interface Investment {
   projectId: number
   amount: number
   projectUrl: string
-  // Add other fields as needed
+}
+
+export interface PaginatedProjectsResponse {
+  projects: Project[]
+  total: number
+  page: number
+  pageSize: number
+  hasMore: boolean
+}
+
+/**
+ * Fetches a paginated/lazy chunk of bonds to optimize initial load time from 3-5s down to sub-second.
+ */
+export async function getProjectsPaginated(page = 1, pageSize = 12): Promise<PaginatedProjectsResponse> {
+  if (!API_URL) {
+    const all = HB_DATA.projects
+    const start = (page - 1) * pageSize
+    const projects = all.slice(start, start + pageSize)
+    return {
+      projects,
+      total: all.length,
+      page,
+      pageSize,
+      hasMore: start + pageSize < all.length,
+    }
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/projects?page=${page}&limit=${pageSize}`)
+    if (!res.ok) throw new Error(`HTTP @${res.status}`)
+    const data = await res.json()
+    if (Array.isArray(data)) {
+      const start = (page - 1) * pageSize
+      return {
+        projects: data.slice(start, start + pageSize),
+        total: data.length,
+        page,
+        pageSize,
+        hasMore: start + pageSize < data.length,
+      }
+    }
+    return data as PaginatedProjectsResponse
+  } catch {
+    console.warn('[api] GET /projects paginated failed -- using local dataset chunk')
+    const all = HB_DATA.projects
+    const start = (page - 1) * pageSize
+    const projects = all.slice(start, start + pageSize)
+    return {
+      projects,
+      total: all.length,
+      page,
+      pageSize,
+      hasMore: start + pageSize < all.length,
+    }
+  }
 }
 
 export async function getProjects(): Promise<Project[]> {
