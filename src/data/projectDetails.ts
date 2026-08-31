@@ -253,14 +253,6 @@ export const PROJECT_DETAILS: Record<number, ProjectDetail> = {
     name: 'Kerala Micro-Hydro',
     location: 'Idukki, Kerala, India',
     creator: { name: 'Idukki Hill Hydro Society', verified: true, since: '2025' },
-    priceHistory: [
-      { date: 'Jan 2026', price: 98.2, yield: 6.4, hash: '4d0a…91b7' },
-      { date: 'Feb 2026', price: 98.8, yield: 6.3, hash: 'e913…7c4f' },
-      { date: 'Mar 2026', price: 99.5, yield: 6.2, hash: 'aa70…2d6e' },
-      { date: 'Apr 2026', price: 100.1, yield: 6.1, hash: '1c8b…43a1' },
-      { date: 'May 2026', price: 100.8, yield: 6.0, hash: 'f2e8…02d9' },
-      { date: 'Jun 2026', price: 101.4, yield: 5.9, hash: '6d1c…b0a4' },
-    ],
     scoreHistory: {
       credit: [
         { date: 'Jan 2026', value: 62, hash: '4d0a…91b7' },
