@@ -171,6 +171,27 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
         </div>
       </section>
 
+      {/* Bond pricing history */}
+      <section style={{ marginBottom: 40 }}>
+        <h2 style={sectionTitle}>{t('pricingTitle')}</h2>
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <Sparkline points={detail.bondHistory.map((p) => p.price)} aria-label={t('priceHistory')} />
+              <span style={{ fontFamily: 'var(--font-data)', fontSize: 'var(--type-fine)', color: 'var(--ink-40)' }}>
+                {t('priceLabel')}
+              </span>
+            </div>
+            <div style={{ flex: '1 1 240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <Sparkline points={detail.bondHistory.map((p) => p.yield)} aria-label={t('yieldHistory')} />
+              <span style={{ fontFamily: 'var(--font-data)', fontSize: 'var(--type-fine)', color: 'var(--ink-40)' }}>
+                {t('yieldLabel')}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Funding timeline */}
       <section style={{ marginBottom: 40 }}>
         <h2 style={sectionTitle}>{t('fundingTitle')}</h2>
