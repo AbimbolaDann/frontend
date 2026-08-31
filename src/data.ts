@@ -11,6 +11,14 @@ export type ProjectType = 'Solar' | 'Wind' | 'Hudro'
  */
 type BondStatus = 'open' | 'upcoming' | 'funded'
 
+export interface PricePoint {
+  date: string
+  /** Price as percentage of par, e.g. 102.5 */
+  price: number
+  /** Yield to maturity, as a percentage, e.g. 6.8 */
+  yield: number
+}
+
 export interface Project {
   id: number
   name: string
@@ -32,6 +40,8 @@ export interface Project {
    * funding numbers.
    */
   status?: BondStatus
+  /** Historical price/yield points for trend charts */
+  priceHistory?: PricePoint[]
 }
 
 export interface Activity {
@@ -78,6 +88,14 @@ const INITIAL_PROJECTS: Project[] = [
     fundedAmount: 420000,
     fundingGoal: 600000,
     status: 'open',
+    priceHistory: [
+      { date: '2024-09-15', price: 98.5, yield: 8.0 },
+      { date: '2024-10-15', price: 99.1, yield: 7.9 },
+      { date: '2024-11-15', price: 99.8, yield: 7.7 },
+      { date: '2024-12-15', price: 100.4, yield: 7.5 },
+      { date: '2025-01-15', price: 101.2, yield: 7.3 },
+      { date: '2025-02-15', price: 102.0, yield: 7.2 },
+    ],
   },
   {
     id: 2,
@@ -90,6 +108,14 @@ const INITIAL_PROJECTS: Project[] = [
     fundedAmount: 1180000,
     fundingGoal: 1500000,
     status: 'upcoming',
+    priceHistory: [
+      { date: '2024-09-15', price: 100.2, yield: 6.6 },
+      { date: '2024-10-15', price: 101.0, yield: 6.5 },
+      { date: '2024-11-15', price: 101.8, yield: 6.3 },
+      { date: '2024-12-15', price: 102.5, yield: 6.2 },
+      { date: '2025-01-15', price: 103.3, yield: 6.0 },
+      { date: '2025-02-15', price: 104.0, yield: 5.9 },
+    ],
   },
   {
     id: 3,
@@ -102,6 +128,14 @@ const INITIAL_PROJECTS: Project[] = [
     fundedAmount: 640000,
     fundingGoal: 800000,
     status: 'open',
+    priceHistory: [
+      { date: '2024-09-15', price: 96.8, yield: 8.4 },
+      { date: '2024-10-15', price: 97.6, yield: 8.2 },
+      { date: '2024-11-15', price: 98.5, yield: 8.0 },
+      { date: '2024-12-15', price: 99.3, yield: 7.8 },
+      { date: '2025-01-15', price: 100.2, yield: 7.6 },
+      { date: '2025-02-15', price: 101.0, yield: 7.5 },
+    ],
   },
   {
     id: 4,
@@ -114,6 +148,14 @@ const INITIAL_PROJECTS: Project[] = [
     fundedAmount: 960000,
     fundingGoal: 1200000,
     status: 'open',
+    priceHistory: [
+      { date: '2024-09-15', price: 100.8, yield: 5.9 },
+      { date: '2024-10-15', price: 101.6, yield: 5.8 },
+      { date: '2024-11-15', price: 102.5, yield: 5.7 },
+      { date: '2024-12-15', price: 103.4, yield: 5.5 },
+      { date: '2025-01-15', price: 104.2, yield: 5.4 },
+      { date: '2025-02-15', price: 105.0, yield: 5.2 },
+    ],
   },
   {
     id: 5,
@@ -126,6 +168,14 @@ const INITIAL_PROJECTS: Project[] = [
     fundedAmount: 310000,
     fundingGoal: 400000,
     status: 'upcoming',
+    priceHistory: [
+      { date: '2024-09-15', price: 93.5, yield: 9.6 },
+      { date: '2024-10-15', price: 94.3, yield: 9.4 },
+      { date: '2024-11-15', price: 95.0, yield: 9.3 },
+      { date: '2024-12-15', price: 95.8, yield: 9.1 },
+      { date: '2025-01-15', price: 96.6, yield: 9.0 },
+      { date: '2025-02-15', price: 97.4, yield: 8.8 },
+    ],
   },
   {
     id: 6,
@@ -138,6 +188,14 @@ const INITIAL_PROJECTS: Project[] = [
     fundedAmount: 520000,
     fundingGoal: 700000,
     status: 'open',
+    priceHistory: [
+      { date: '2024-09-15', price: 99.0, yield: 7.6 },
+      { date: '2024-10-15', price: 99.8, yield: 7.4 },
+      { date: '2024-11-15', price: 100.5, yield: 7.2 },
+      { date: '2024-12-15', price: 101.3, yield: 7.0 },
+      { date: '2025-01-15', price: 102.1, yield: 6.9 },
+      { date: '2025-02-15', price: 103.0, yield: 6.8 },
+    ],
   },
 ]
 
