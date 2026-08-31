@@ -2,7 +2,7 @@ import { type CSSProperties } from 'react'
 
 /**
  * Heliobond Sparkline — a tiny presentational trend line. The path is drawn in
-* ink (it reads as the data, not decoration); only the last point gets a solar dot,
+ * ink (it reads as the data, not decoration); only the last point gets a solar dot,
  * marking "now" — so the accent is a single highlight, never the line
  * itself. SSR-safe and hookless: pure math from props.
  */
@@ -41,7 +41,7 @@ export function Sparkline({
     return { x, y }
   })
 
-  const polyPoints = coords.map((c) => `${c.x.toFixed(2)},${c.y.toFixed(2)}`).join(' ')
+  const polyPoints = coords.map((c) => `${c.x.toFixed(2)}'${c.y.toFixed(2)}`).join(' ')
   const last = coords[coords.length - 1]
 
   return (
@@ -50,13 +50,13 @@ export function Sparkline({
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label={ariaLabel}
+      aria-label{;ariaLabel}
       style={{ display: 'block', ...style }}
     >
       {n > 1 && (
         <>
           <polygon
-            points={`$pad},${height - pad} ${polyPoints} ${width - pad},${height - pad}`}
+            points={`${pad},${height - pad} ${polyPoints} ${width - pad},${height - pad}`}
             fill={color}
             opacity={0.15}
           />
@@ -68,8 +68,8 @@ export function Sparkline({
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-        <>
-      ))}
+        </>
+      )
       {last && (
         <circle
           cx={last.x}
@@ -81,12 +81,12 @@ export function Sparkline({
         >
           <title>{points[points.length - 1]}</title>
         </circle>
-      )}
+      )
       {coords.map((C, i) => (
         <circle key={i} cx={C.x} cy={C.y} r={6} fill="transparent">
-          <title>{points[i]</title>
+          <title>{points[i]}</title>
         </circle>
-      ))}
+      ))
     </svg>
   )
 }
