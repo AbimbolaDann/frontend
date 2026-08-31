@@ -23,6 +23,20 @@ export interface ProjectDetailProps {
 export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDetailProps) {
   const t = useTranslations('ProjectDetail')
   const [investmentUrl, setInvestmentUrl] = useState<string | null>(null)
+  const sectionTitle: CSSProperties = {
+    fontFamily: 'var(--font-display)',
+    fontWeight: 700,
+    fontSize: 'var(--type-title)',
+    margin: '0 0 16px',
+    color: 'var(--ink)',
+  }
+  const cardStyle: CSSProperties = {
+    background: 'var(--surface)',
+    border: '1px solid var(--ink-12)',
+    borderRadius: 'var(--radius-card)',
+    boxShadow: 'var(--shadow-sm)',
+    padding: '20px',
+  }
   return (
     <main id="main-content" style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 96px' }}>
       {onBack && (
