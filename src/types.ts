@@ -24,7 +24,7 @@ export type RiskScore = 'conservative' | 'moderate' | 'aggressive';
 export type BondRating = 'AAA' | 'AA' | 'A' | 'BBB' | 'BB' | 'B' | 'CCC';
 
 export interface BondPricePoint {
-  date: string; // ISO date string (YYYY-MM-DD)
+  date: string; // ISO Date string (YYYY-MM-DD)
   price: number;
   yield: number;
 }
