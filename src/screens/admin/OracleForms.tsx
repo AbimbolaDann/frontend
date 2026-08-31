@@ -12,6 +12,12 @@ export function isSafeScore(value: string): boolean {
   return /^\d*\.?\d+$/.test(value) && Number.isFinite(n) && n >= 0 && n <= 100
 }
 
+export function isSafeAmount(value: string, liquid: number): boolean {
+  if (!/^\d*\.?\d+$/.test(value)) return false
+  const n = parseAmount(value)
+  return Number.isFinite(n) && n > 0 && n <= liquid
+}
+
 /**
  * OracleForms — the two privileged write paths, side by side:
  *   1. Push score update — re-verify a project's credit + green on-chain.
@@ -43,7 +49,7 @@ export function OracleForms({ projects, liquid, onPushScores, onFund }: OracleFo
   const scoresValid = isSafeScore(credit) && isSafeScore(green) && validateScores(credit, green)
 
   const amountN = parseAmount(amount)
-  const fundValid = amountN > 0 && amountN <= liquid
+  const fundValid = isSafeAmount(amount, liquid)
   const overLiquid = amountN > liquid
 
   const target = projects.find((p) => p.id === scoreId)
@@ -361,6 +367,24 @@ if (import.meta.vitest) {
       expect(isSafeScore('0')).toBe(true)
       expect(isSafeScore('100')).toBe(true)
       expect(isSafeScore('50.5')).toBe(true)
+    })
+
+    it.each([
+      '<script>alert("xss")</script>',
+      "' OR '1'='1",
+      '1; DROP TABLE projects--',
+      '1e3',
+      '-1',
+      '0',
+      '0x10',
+      '',
+    ])('rejects malicious or malformed amount: %s', (input) => {
+      expect(isSafeAmount(input, 1000)).toBe(false)
+    })
+
+    it('accepts valid amount boundaries', () => {
+      expect(isSafeAmount('0.01', 1000)).toBe(true)
+      expect(isSafeAmount('1000', 1000)).toBe(true)
     })
   })
 }
