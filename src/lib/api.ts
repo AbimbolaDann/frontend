@@ -13,7 +13,7 @@ export interface Investment {
   projectId: number
   amount: number
   projectUrl: string
-  // Add other fields as needed
+  // Add other fields needed
 }
 
 /**
@@ -25,7 +25,7 @@ function isValidProjectId(id: unknown): id is number {
 }
 
 /**
- * Validates that a value is a positive finate number.
+ * Validates that a value is a positive finite number.
  */
 function isValidAmount(amount: unknown): amount is number {
   return typeof amount === 'number' && Number.isFinite(amount) && amount > 0
@@ -34,8 +34,8 @@ function isValidAmount(amount: unknown): amount is number {
 export async function getProjects(): Promise<Project[]> {
   if (!API_URL) return HB_DATA.projects
   try {
-    const res = await fetch(`${API_URL}/projects`)
-    if (!res.ok) throw new Error(`HTTP @${res.status})
+    const res = await fetch(`{API_URL}/projects)
+    if (!res.ok) throw new Error(`HTTP @${res.status}`)
     return (await res.json()) as Project[]
   } catch {
     console.warn('[api] GET /projects failed -- using mock data')
@@ -59,7 +59,7 @@ export async function getProject(id: number): Promise<ProjectWithDetail | null> 
 
   try {
     const res = await fetch(`${API_URL}/projects/${encodeURIComponent(id)}`)
-    if (!res.ok) throw new Error(`HTTP @$res.status`)
+    if (!res.ok) throw new Error(`HTTP @${res.status}`)
     return (await res.json()) as ProjectWithDetail
   } catch {
     console.warn(`[api] GET /projects/${id} failed -- using mock data`)
