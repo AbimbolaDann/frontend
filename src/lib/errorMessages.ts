@@ -1,4 +1,4 @@
-/**
+/*
  * Maps technical error codes and enum values to user-friendly messages.
  * Never surface raw codes like 'insufficient_balance' to users.
  */
@@ -12,6 +12,7 @@ const ERROR_CODE_MAP: Record<string, string> = {
   wallet_not_connected: 'Please connect your wallet first.',
   timeout: 'Connection timed out - please try again.',
   network_error: 'Network issue - please check your connection and try again.',
+  stellar_unreachable: 'Cannot reach Stellar network - showing cached data.',
   simulation_failed: 'Could not estimate the transaction - please try again.',
   tx_failed: 'Transaction did not go through - please try again.',
   internal_server_error: 'We are having trouble right now - please try again shortly.',
@@ -24,6 +25,18 @@ const ERROR_CODE_MAP: Record<string, string> = {
 }
 
 const FALLBACK_MESSAGE = 'Something went wrong - please try again.'
+
+const STELLAR_UNREACHABLE_MESSAGE = ERROR_CODE_MAP.stellar_unreachable
+
+// Keywords that indicate a network connectivity issue with the Stellar node.
+const NETWORK_ERROR_PATTERNS = [
+  'network', 'socket', 'fetch', 'connection', 'connect',
+  'unreachable', 'refused', 'dns', 'timed out', 'timeout',
+  'ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT', 'EAI_AGAIN',
+  'ECONRESET', 'ENETDOWN', 'ENETUNREACH', 'EHOSTUNREACH',
+  'ERR_NAME_NOT_RESOLVED', 'socket hang up', 'network error',
+  'fetch failed', 'request failed', 'aborted', 'abort',
+]
 
 function normalizeCode(code: string): string {
   return code.trim().toLowerCase().replace(/[\\s-]+/g, '_')
@@ -52,10 +65,21 @@ function extractCodeFromError(error: unknown): string | null {
   return null;
 }
 
+function looksLikeNetworkError(message: string): boolean {
+  const lower = message.toLowerCase()
+  return NETWORK_ERROR_PATTERNS.some((pattern) => lower.includes(pattern.toLowerCase()))
+}
+
 export function getFriendlyErrorMessage(codeOrMessage: string): string {
   if (!codeOrMessage) return FALLBACK_MESSAGE;
   const normalized = normalizeCode(codeOrMessage);
   if (ERROR_CODE_MAP[normalized]) return ERROR_CODE_MAP[normalized];
+
+  // If the error looks like a network/connection issue, degrade gracefully.
+  if (looksLikeNetworkError(codeOrMessage)) {
+    return STELLAR_UNREACHABLE_MESSAGE;
+  }
+
   return FALLBACK_MESSAGE;
 }
 
