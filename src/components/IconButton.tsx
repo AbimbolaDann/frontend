@@ -10,10 +10,13 @@ export interface IconButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   'aria-label'
 > {
+  /** Visual variant ('solid', 'outline', or 'ghost'). Defaults to 'ghost'. */
   variant?: IconButtonVariant
+  /** Button sizing ('sm', 'md', or 'lg'). Defaults to 'md'. */
   size?: IconButtonSize
   /** Accessible label — required; also used as the tooltip. */
   label: string
+  /** The icon node rendered inside the button. */
   children: ReactNode
 }
 

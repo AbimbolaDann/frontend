@@ -6,16 +6,27 @@ import { type CSSProperties } from 'react'
  * meaning never lives in the arc alone (a11y + color-blind safe).
  */
 export interface ScoreGaugeProps {
+  /** The current numeric score value to display on the arc. Defaults to 0. */
   value?: number
+  /** The maximum possible score value. Defaults to 100. */
   max?: number
+  /** Optional label text displayed below the gauge (e.g. "Credit" or "Green"). */
   label?: string
+  /** Custom accessible ARIA label for screen readers announcing the score value. */
   ariaValueLabel?: string
+  /** The width and height in pixels for the SVG gauge. Defaults to 120. */
   size?: number
+  /** The stroke width in pixels for the arc track and solar dot. Defaults to 9. */
   stroke?: number
+  /** Whether to render the numeric value text inside the gauge center. Defaults to true. */
   showValue?: boolean
+  /** Time elapsed since last verification (e.g. "2d ago"). */
   verifiedAgo?: string
+  /** Explicit label for the verification indicator. */
   verifiedLabel?: string
+  /** Optional block explorer URL for chain verification link. */
   explorerUrl?: string
+  /** Custom inline style overrides. */
   style?: CSSProperties
 }
 

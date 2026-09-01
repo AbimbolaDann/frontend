@@ -8,16 +8,25 @@ import { type CSSProperties } from 'react'
 export type StatBlockSize = 'sm' | 'md' | 'lg'
 
 export interface StatBlockProps {
+  /** The descriptive label displayed above or beside the stat figure. */
   label: string
+  /** The primary numeric or text value to display. */
   value: string
   /** Fractional tail rendered dimmer than the integer part, e.g. ".55". */
   decimals?: string
+  /** Signed change indicator text (e.g. "+$12.50 (+2.4%)"). */
   delta?: string
+  /** Direction for the change arrow indicator ('up' or 'down'). Auto-detected from `delta` if omitted. */
   deltaDirection?: 'up' | 'down'
+  /** Optional unit suffix string displayed beside the value (e.g. "USDC" or "%"). */
   unit?: string
+  /** Typography size rung for the stat block ('sm', 'md', or 'lg'). Defaults to 'md'. */
   size?: StatBlockSize
+  /** Optional URL path to make the entire stat block clickable as a link. */
   href?: string
+  /** Custom inline style overrides. */
   style?: CSSProperties
+  /** Whether to stack label and value vertically on mobile viewports. Defaults to false. */
   stackOnMobile?: boolean
 }
 

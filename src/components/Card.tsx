@@ -1,6 +1,11 @@
 import { type HTMLAttributes, type ReactNode } from 'react'
 
+/**
+ * Heliobond Card — standard container surface with consistent background,
+ * border-radius, border, shadow, and default padding.
+ */
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Elements to render inside the card container. */
   children: ReactNode
 }
 
@@ -9,7 +14,7 @@ export function Card({ children, style, className, ...props }: CardProps) {
     <div
       style={{
         background: 'var(--surface)',
-        border: '1'px solid var(--ink-12)',
+        border: '1px solid var(--ink-12)',
         borderRadius: 'var(--radius-card)',
         padding: 24,
         boxShadow: 'var(--shadow-sm)',

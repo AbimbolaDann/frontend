@@ -4,7 +4,9 @@ import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
  * Heliobond Tag — a selectable filter/category pill. Selected state uses a solar-tint fill paired with an ink label (color never alone).
  */
 export interface TagProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Whether the tag pill is currently selected/active. Defaults to false. */
   selected?: boolean
+  /** Tag text label or content. */
   children: ReactNode
 }
 

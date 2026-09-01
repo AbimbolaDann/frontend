@@ -13,8 +13,11 @@ import { useWatchlist } from '../watchlist/WatchlistProvider'
  * doesn't also fire. Shows a transient toast on each change.
  */
 export interface WatchlistButtonProps {
+  /** Unique numerical identifier of the bond to toggle in the watchlist. */
   bondId: number
+  /** Name of the bond displayed in feedback toast notifications. */
   bondName: string
+  /** Size variant of the icon button ('sm', 'md', 'lg'). Defaults to 'sm'. */
   size?: IconButtonSize
 }
 

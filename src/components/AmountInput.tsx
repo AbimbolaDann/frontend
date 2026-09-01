@@ -11,19 +11,33 @@ export { sanitizeAmount }
  * it explains, and offers max.
  */
 export interface AmountInputProps {
+  /** The current numeric input string value. Defaults to empty string. */
   value?: string
+  /** Callback fired when the user edits the input value. */
   onChange?: (value: string) => void
+  /** Currency code displayed beside the input (e.g. "USDC"). Defaults to "USDC". */
   currency?: string
+  /** Label for the user balance header display (e.g. "Wallet Balance"). */
   balanceLabel?: string
+  /** Current available balance string value. */
   balance?: string
+  /** Quick-select amount buttons (percentage or fixed values). Defaults to [25, 50, 100]. */
   chips?: number[]
+  /** Maximum allowed liquidity cap limit value. */
   cap?: number
+  /** Explanatory message displayed when input exceeds liquidity cap limit. */
   capMessage?: string
+  /** Custom label for the Max chip button. */
   maxChipLabel?: string
+  /** Action button text shown when cap limit is reached (e.g. "Set to max"). */
   capActionLabel?: string
+  /** Optional React component or element rendered as on-chain calculation preview. */
   preview?: ReactNode
+  /** Accessible label text for the field input. */
   label?: string
+  /** HTML `id` attribute for input binding. */
   id?: string
+  /** Custom inline style overrides. */
   style?: CSSProperties
 }
 
@@ -57,7 +71,7 @@ export function AmountInput({
 
   const liveMsg = overCap && !wasOverCap ? (capMessage ?? '') : ''
 
-  const set = (v: number) => onChange?(String(v))
+  const set = (v: number) => onChange?.(String(v))
 
   return (
     <div style={{ position: 'relative', ...style }}>
@@ -99,7 +113,7 @@ export function AmountInput({
           alignItems: 'center',
           gap: 10,
           background: 'var(--surface)',
-          border: `p1px solid ${overCap ? 'var(--solar)' : 'var(--ink-12)'}`,
+          border: `1px solid ${overCap ? 'var(--solar)' : 'var(--ink-12)'}`,
           borderRadius: 'var(--radius-input)',
           padding: '0 16px',
           height: 64,
@@ -117,12 +131,12 @@ export function AmountInput({
             e.preventDefault()
             const pastedText = e.clipboardData.getData('text')
             const sanitized = sanitizeAmount(pastedText)
-            onChange?(sanitized)
+            onChange?.(sanitized)
           }}
           onChange={(e) => {
             const v = sanitizeAmount(e.target.value)
             // If editing existing value, typing should replace not append when field was pre-filled
-            onChange?(v)
+            onChange?.(v)
           }}
           style={{
             flex: 1,
@@ -134,7 +148,7 @@ export function AmountInput({
             fontWeight: 600,
             fontSize: 'var(--type-data-display)',
             color: 'var(--ink)',
-            fontFeatureSettings: '"tnum' 1',
+            fontFeatureSettings: '"tnum" 1',
           }}
         />
         <span
@@ -157,7 +171,7 @@ export function AmountInput({
           margin: '8px 0 0',
         }}
       >
-        Min 1 USDC — Max {cap ?? ‘⁊7} USDC
+        Min 1 USDC — Max {cap ?? '10,000'} USDC
       </p>
       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
         {chips.map((c) => (

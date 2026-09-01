@@ -15,10 +15,13 @@ import { type AlertOperator } from '../lib/yieldAlerts'
  * card — it stops propagation so the card's own click doesn't also fire.
  */
 export interface YieldAlertButtonProps {
+  /** Unique numerical identifier of the bond for yield alert configuration. */
   bondId: number
+  /** Name of the bond displayed in the alert modal header. */
   bondName: string
   /** Current effective yield for this bond, displayed in the modal. */
   currentYield: number
+  /** Size variant of the icon button ('sm', 'md', 'lg'). Defaults to 'sm'. */
   size?: IconButtonSize
 }
 
