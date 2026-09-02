@@ -10,20 +10,33 @@ import { formatMoney } from '../lib/format'
  * not a checkout.
  */
 export interface ProjectCardProps {
+  /** The project name / title displayed on the card header. */
   name: string
+  /** The geographic location of the project (e.g. "Nevada, USA"). */
   location: string
+  /** Optional URL or path to the project background hero image. */
   image?: string
+  /** Solar credit score rating (0-100) displayed in the credit ScoreGauge. */
   credit?: number
+  /** Environmental/green rating (0-100) displayed in the green ScoreGauge. */
   green?: number
+  /** Human-readable string representing total funded amount (e.g. "$1.2M"). */
   funded?: string
+  /** Label for the funding display section (e.g. "Total Funded"). */
   fundedLabel?: string
+  /** Time elapsed since last verification (e.g. "2d ago"). */
   verifiedAgo?: string
+  /** Explicit label for the verification badge; defaults to `verifiedAgo`. */
   verifiedLabel?: string
+  /** Callback fired when the user clicks or selects the project card. */
   onOpen?: () => void
+  /** Optional inline CSS style overrides for the card container. */
   style?: CSSProperties
+  /** Target funding goal in USD for calculating the progress bar percentage. */
   fundingGoal?: number
+  /** Amount already raised in USD for calculating the progress bar percentage. */
   fundedAmount?: number
-  /** Optional control pinned to the top-right of the hiro (e.g. watchlist star). */
+  /** Optional control pinned to the top-right of the hero (e.g. watchlist star). */
   action?: ReactNode
 }
 
@@ -160,11 +173,11 @@ export function ProjectCard({
                 <div
                   style={{
                     height: 6,
-                      borderRadius: 'var(--radius-pill)',
-                      background: 'var(--ink-06)',
-                      border: '1px solid var(--ink-12)',
-                      overflow: 'hidden',
-                    }}
+                    borderRadius: 'var(--radius-pill)',
+                    background: 'var(--ink-06)',
+                    border: '1px solid var(--ink-12)',
+                    overflow: 'hidden',
+                  }}
                 >
                   <div
                     style={{
@@ -177,10 +190,10 @@ export function ProjectCard({
                 <div
                   style={{
                     fontFamily: 'var(--font-data)',
-                      fontSize: 'var(--type-fine)',
-                      color: 'var(--ink-40)',
-                      marginTop: 4,
-                    }}
+                    fontSize: 'var(--type-fine)',
+                    color: 'var(--ink-40)',
+                    marginTop: 4,
+                  }}
                 >
                   {fundedPct}% of {formatMoney(fundingGoal!)}
                 </div>

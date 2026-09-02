@@ -3,12 +3,17 @@ import { useState, useMemo } from 'react'
 import type { Bond } from '@/lib/bondUtils'
 import { searchBondsByName } from '@/lib/bondUtils'
 
-interface Props {
+/**
+ * Heliobond BondSearch — search input and filtered result list for finding bonds by name.
+ */
+export interface BondSearchProps {
+  /** Array of bond items available for searching. */
   bonds: Bond[]
+  /** Optional callback fired when the user selects a bond from search results. */
   onSelect?: (bond: Bond) => void
 }
 
-export function BondSearch({ bonds, onSelect }: Props) {
+export function BondSearch({ bonds, onSelect }: BondSearchProps) {
   const [query, setQuery] = useState('')
   const results = useMemo(() => searchBondsByName(bonds, query), [bonds, query])
   return (

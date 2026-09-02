@@ -8,8 +8,11 @@ import { type CSSProperties, type HTMLAttributes, type ReactNode } from 'react'
 export type BadgeTone = 'neutral' | 'solar' | 'growth' | 'ember' | 'testnet'
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  /** Visual theme/color tone of the badge marker. Defaults to 'neutral'. */
   tone?: BadgeTone
+  /** Optional icon node displayed preceding the badge label. */
   icon?: ReactNode
+  /** Badge text label or content. */
   children: ReactNode
 }
 
