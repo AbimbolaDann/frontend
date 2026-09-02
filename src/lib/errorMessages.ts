@@ -11,10 +11,17 @@ const ERROR_CODE_MAP: Record<string, string> = {
   invalid_amount: 'Please enter a valid amount.',
   wallet_not_connected: 'Please connect your wallet first.',
   timeout: 'Connection timed out - please try again.',
-  network_error: 'Cannot reach Stellar network - showing cached data.',
+  network_error: 'Network issue - please check your connection and try again.',
   stellar_unreachable: 'Cannot reach Stellar network - showing cached data.',
   simulation_failed: 'Could not estimate the transaction - please try again.',
   tx_failed: 'Transaction did not go through - please try again.',
+  internal_server_error: 'We are having trouble right now - please try again shortly.',
+  server_error: 'We are having trouble right now - please try again shortly.',
+  internal_error: 'Something went wrong on our side - please try again.',
+  unexpected_error: 'Something went wrong - please try again.',
+  '500': 'We are having trouble right now - please try again shortly.',
+  '502': 'We are having trouble right now - please try again shortly.',
+  '503': 'We are having trouble right now - please try again shortly.',
 }
 
 const FALLBACK_MESSAGE = 'Something went wrong - please try again.'
@@ -32,7 +39,30 @@ const NETWORK_ERROR_PATTERNS = [
 ]
 
 function normalizeCode(code: string): string {
-  return code.trim().toLowerCase().replace(/[\s-]+/g, '_')
+  return code.trim().toLowerCase().replace(/[\\s-]+/g, '_')
+}
+
+function extractCodeFromError(error: unknown): string | null {
+  if (!error || typeof error !== 'object') return null;
+  const obj = error as Record<string, any>;
+  // If it looks like an Axios/Axios-like error with a response
+  if (obj.response) {
+    const status = obj.response.status;
+    if (typeof status === 'number' && status >= 500) {
+      return String(status);
+    }
+    const data = obj.response.data;
+    if (data && typeof data === 'object') {
+      if (typeof data.code === 'string') return data.code;
+      if (typeof data.message === 'string') return data.message;
+    } else if (typeof data === 'string' && data.trim()) {
+      return data;
+    }
+    if (typeof status === 'number') return String(status);
+  }
+  if (typeof obj.code === 'string') return obj.code;
+  if (typeof obj.message === 'string') return obj.message;
+  return null;
 }
 
 function looksLikeNetworkError(message: string): boolean {
@@ -41,30 +71,22 @@ function looksLikeNetworkError(message: string): boolean {
 }
 
 export function getFriendlyErrorMessage(codeOrMessage: string): string {
-  if (!codeOrMessage) return FALLBACK_MESSAGE
-  const normalized = normalizeCode(codeOrMessage)
-  if (ERROR_CODE_MAP[normalized]) return ERROR_CODE_MAP[normalized]
+  if (!codeOrMessage) return FALLBACK_MESSAGE;
+  const normalized = normalizeCode(codeOrMessage);
+  if (ERROR_CODE_MAP[normalized]) return ERROR_CODE_MAP[normalized];
 
   // If the error looks like a network/connection issue, degrade gracefully.
   if (looksLikeNetworkError(codeOrMessage)) {
-    return STELLAR_UNREACHABLE_MESSAGE
+    return STELLAR_UNREACHABLE_MESSAGE;
   }
 
-  // If message already looks friendly contains spaces and no underscores), return as-is
-  if (!codeOrMessage.includes('_') && codeOrMessage.length > 10) return codeOrMessage
-  // Try to humanize snake_case codes
-  if (codeOrMessage.includes('_')) {
-    return codeOrMessage
-      .split('_')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ')
-      + '— please try again.'
-  }
-  return codeOrMessage
+  return FALLBACK_MESSAGE;
 }
 
 export function parseAndFriendlyError(error: unknown): string {
-  if (error instanceof Error) return getFriendlyErrorMessage(error.message)
-  if (typeof error === 'string') return getFriendlyErrorMessage(error)
-  return FALLBACK_MESSAGE
+  const code = extractCodeFromError(error);
+  if (code) return getFriendlyErrorMessage(code);
+  if (error instanceof Error) return getFriendlyErrorMessage(error.message);
+  if (typeof error === 'string') return getFriendlyErrorMessage(error);
+  return FALLBACK_MESSAGE;
 }

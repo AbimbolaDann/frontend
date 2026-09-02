@@ -1,17 +1,16 @@
 import os
 import uuid
 from io import BytesIO
-
 from flask import Flask, render_template, request, redirect, url_for, abort, session, jsonify, render_template_string
-from flask_sqlalchemy Import SQLAlchemy
-from PIL Import Image
-from werkzeug.utils import secure_filename
+from flask_sqlalchemy import SQLAlchemy
+from PIL import Image
+from werkzueg.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
-app.config['SQLALCHYMA_DATABASE_URI'] = 'sqlite:///tasks.db'
-app.config['SQLALCHYM_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://tasks.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff'}
@@ -22,6 +21,7 @@ MAX_DIMENSION = 1920
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+app.config['PROPAGATE_EXCEPTIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -44,7 +44,7 @@ def allowed_file(filename):
 def _resize(img):
     w, h = img.size
     if w > MAX_DIMENSION or h > MAX_DIMENSION:
-        img.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+        img.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCOS)
     return img
 
 def save_compressed_images(file_storage):
@@ -135,36 +135,9 @@ def login():
             session['user'] = username
             return redirect(url_for('index'))
         else:
-            return render_template_string("<p style='color:red'>Invalid credentials. Try again.</p><a href='{{ url_for('login') }}'>Back to login</a>")
-    login_html = '''
-    <!doctype html>
-    <html>
-    <head><title>Login</title></head>
-    <body>
-        <h2>Login</h2>
-        <form method="post">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login with password</button>
-        </form>
-        <hr>
-        <button onclick="biometricLogin()">Login with Face ID / Touch ID</button>
-        <script>
-        function biometricLogin() {
-            const form = document.createElement('form');
-            form.method = 'post';
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'biometric';
-            input.value = 'true';
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        }
-        </script>
-    </body>
-    </html>
-    '''
+            return render_template_string(''<p style="color:red">Invalid credentials. Try again.</p><a href="{{ url_for('login') }}">Back to login</a>'')
+
+    login_html = '''<!doctype html><html><head><title>Login</title></head><body><h2>Login</h2><form method="post"><input type="text" name="username" placeholder="Username" required><input type="password" name="password" placeholder="Password" required><button type="submit">Login with password</button></form><hr><button onclick="biometricLogin()">Login with Face ID / Touch ID</button><script>function biometricLogin() {const form = document.createElement('form');form.method = 'post';const input = document.createElement('input');input.type = 'hidden';input.name = 'biometric';input.value = 'true';form.appendChild(input);document.body.appendChild(form);form.submit();}</script></body></html>''
     return render_template_string(login_html)
 
 @app.route('/logout')
@@ -176,7 +149,13 @@ def logout():
 def biometric_status():
     return jsonify('biometric_supported': True)
 
+@app.errorhandler(500)
+def internal_server_error(e):
+    if request.path.startswith('/api'):
+        return jsonify({'error': 'We are having trouble right now - please try again shortly.'}), 500
+    return render_template_string(''<!doctype html><html><head><title>Server Error</title></head><body><h1>Something went wrong</h1><p>An unexpected error occurred. Please try again later.</p></body></html>''), 500
+
 if __name__ == '__main__':
-    with app.app_context():
+    with app.app_context(){
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=os.environ.get('FLASK_DEBUG') == '1')
