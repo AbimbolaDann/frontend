@@ -16,6 +16,22 @@ export interface Investment {
   projectId: number
   amount: number
   projectUrl: string
+  // Add other fields needed
+}
+
+/**
+ * Validates that a value is a positive integer.
+ * This helps prevent XSS and injection attacks via URL manipulation.
+ */
+function isValidProjectId(id: unknown): id is number {
+  return typeof id === 'number' && Number.isInteger(id) && id > 0
+}
+
+/**
+ * Validates that a value is a positive finite number.
+ */
+function isValidAmount(amount: unknown): amount is number {
+  return typeof amount === 'number' && Number.isFinite(amount) && amount > 0
 }
 
 export interface PaginatedProjectsResponse {
@@ -86,6 +102,11 @@ export async function getProjects(): Promise<Project[]> {
 }
 
 export async function getProject(id: number): Promise<ProjectWithDetail | null> {
+  if (!isValidProjectId(id)) {
+    console.warn(`[api] Invalid project id: ${id}`)
+    return null
+  }
+
   const mockProject = HB_DATA.projects.find((p) => p.id === id)
   const mockDetail = PROJECT_DETAILS[id]
 
@@ -128,9 +149,9 @@ export async function createInvestment(input: { projectId: number; amount: numbe
     const data = (await res.json()) as Investment
     return {
       ...data,
-      projectUrl: `/projects/${input.projectId}`,
+      projectUrl: `/projects/${encodeURIComponent(input.projectId)}`,
     }
-  } catch {
+  } catch (error) {
     console.warn('[api] POST /investments failed -- using mock data')
     return mockInvestment()
   }

@@ -2,11 +2,19 @@
 
 import type { CSSProperties } from 'react'
 
+/**
+ * Heliobond Pagination — navigation bar for paginated project or bond lists.
+ */
 export interface PaginationProps {
+  /** The 1-based index of the currently active page. */
   currentPage: number
+  /** Total number of pages available. */
   totalPages: number
+  /** Total count of items across all pages. */
   totalItems: number
+  /** Number of items displayed per page. */
   pageSize: number
+  /** Callback fired when the user selects a new page index. */
   onPageChange: (page: number) => void
 }
 

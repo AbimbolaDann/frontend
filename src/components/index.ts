@@ -27,6 +27,7 @@ export type { ToastProps, ToastTone } from './Toast'
 export { Card } from './Card'
 export type { CardProps } from './Card'
 export { Pagination } from './Pagination'
+export type { PaginationProps } from './Pagination'
 export { FormField, FormInput, FormTextarea, FormSelect } from './FormField'
 export type {
   FormFieldProps,

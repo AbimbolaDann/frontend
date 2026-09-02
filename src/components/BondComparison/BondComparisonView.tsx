@@ -2,13 +2,19 @@
 import type { Bond } from '@/lib/bondUtils';
 import { getBondsForComparison } from '@/lib/bondUtils';
 
-interface Props {
+/**
+ * Heliobond BondComparisonView — side-by-side comparison table/grid of selected bond items.
+ */
+export interface BondComparisonViewProps {
+  /** Array of available bond data items. */
   bonds: Bond[];
-  selectedIds: (string|number)[];
+  /** Array of bond IDs selected for side-by-side comparison. */
+  selectedIds: (string | number)[];
+  /** Optional callback fired when the comparison view is closed. */
   onClose?: () => void;
 }
 
-export function BondComparisonView({ bonds, selectedIds, onClose }: Props) {
+export function BondComparisonView({ bonds, selectedIds, onClose }: BondComparisonViewProps) {
   let selected: Bond[] = [];
   let error: string | null = null;
   try {
