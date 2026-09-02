@@ -24,11 +24,21 @@ export interface Project {
   name: string
   location: string
   type: ProjectType
+  /** Credit Quality, oracle-verified, 0–100. */
   credit: number
+  /** Green Impact, oracle-verified, 0–100. */
   green: number
+  /** Capital deployed to this project from the pool (display string). */
   funded: string
+  /** Capital deployed, as a number. */
   fundedAmount: number
+  /** Stated funding goal. */
   fundingGoal: number
+  /**
+   * Funding availability. Optional so remote API rows without it stay valid;
+   * `getBondStatus()` in `src/lib/watchlist.ts` derives a fallback from the
+   * funding numbers.
+   */
   status?: BondStatus
   /** Historical price/yield points for trend charts */
   priceHistory: PricePoint[]
@@ -77,6 +87,7 @@ export interface HeliobondData {
     backed: number
     riskScore: number
     riskLevel: 'conservative' | 'moderate' | 'aggressive'
+    referralLink?: string
   }
   projects: Project[]
   activity: Activity[]
@@ -253,6 +264,44 @@ function getRiskIndicator(projects: Project[]): { riskScore: number; riskLevel: 
 
 const PROJECTS_FUNDED = INITIAL_PROJECTS.length + OFF_SCREEN_PROJECTS_COUNT
 
+// Helper to derive the portfolio risk indicator from the bond mix.
+// Credit scores are 0–100; higher credit = lower risk.
+// The risk score is inverted so a higher number means higher risk, and the
+// risk level is determined by the share of holdings in each credit band.
+function getRiskIndicator(projects: Project[]): { riskScore: number; riskLevel: 'conservative' | 'moderate' | 'aggressive' } {
+  const totalFunded = projects.reduce((sum, p) => sum + p.fundedAmount, 0)
+  if (totalFunded === 0) {
+    return { riskScore: 0, riskLevel: 'conservative' }
+  }
+
+  const weightedCredit = projects.reduce((sum, p) => sum + p.credit * p.fundedAmount, 0) / totalFunded
+  const riskScore = Math.round((100 - weightedCredit) * 10) / 10
+
+  // Determine the mix of holdings by rating class.
+  let highGradeShare = 0 // credit >= 80
+  let lowGradeShare = 0 // credit < 70
+
+  for (const p of projects) {
+    if (p.fundedAmount <= 0) continue
+    const share = p.fundedAmount / totalFunded
+    if (p.credit >= 80) highGradeShare += share
+    else if (p.credit < 70) lowGradeShare += share
+  }
+
+  let riskLevel: 'conservative' | 'moderate' | 'aggressive'
+  if (lowGradeShare > 0.2 || highGradeShare < 0.5) {
+    riskLevel = 'aggressive'
+  } else if (highGradeShare >= 0.7 && lowGradeShare <= 0.1) {
+    riskLevel = 'conservative'
+  } else {
+    riskLevel = 'moderate'
+  }
+
+  return { riskScore, riskLevel }
+}
+
+const { riskScore, riskLevel } = getRiskIndicator(INITIAL_PROJECTS)
+
 const POOL = {
   totalAssets: 4862014.55,
   sharePrice: 1.0058,
@@ -261,13 +310,11 @@ const POOL = {
   projectsFunded: PROJECTS_FUNDED,
 }
 
+const POOL_COUNTERS = formatPoolCounters(POOL)
+
 export const HB_DATA: HeliobondData = {
   pool: POOL,
-  counters: {
-    totalAssets: formatCurrency(POOL.totalAssets),
-    projectsFunded: formatNumber(POOL.projectsFunded),
-    projectedRate: formatFixed(POOL.projectedRate, 1),
-  },
+  counters: POOL_COUNTERS,
   you: {
     value: 24180.45,
     deltaAbs: 612.18,
@@ -276,8 +323,9 @@ export const HB_DATA: HeliobondData = {
     poolSharePct: 0.49,
     weightedGreen: 88,
     backed: PROJECTS_FUNDED,
-    riskScore: 0,
-    riskLevel: 'conservative',
+    riskScore,
+    riskLevel,
+    referralLink: 'https://heliobond.fi/ref/HB24041',
   },
   projects: INITIAL_PROJECTS,
   activity: [],

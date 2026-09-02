@@ -1,6 +1,14 @@
 import { memo, useMemo, useState, type CSSProperties } from 'react'
 import { useTranslations } from 'next-intl'
-import { Badge, Button, PinIcon, ScoreGauge, ShieldCheckIcon, WatchlistButton } from '../components'
+import {
+  Badge,
+  Button,
+  PinIcon,
+  ScoreGauge,
+  ShieldCheckIcon,
+  WatchlistButton,
+  YieldAlertButton,
+} from '../components'
 import { Sparkline as SparklineUnmemoized } from '../components/Sparkline'
 const Sparkline = memo(SparklineUnmemoized)
 import { formatMoney } from '../lib/format'
@@ -21,8 +29,14 @@ export interface ProjectDetailProps {
   onBack?: () => void
 }
 
-export const ProjectDetail = memo(function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDetailProps) {
+export const ProjectDetail = memo(function ProjectDetail({
+  project,
+  detail,
+  onInvest,
+  onBack,
+}: ProjectDetailProps) {
   const t = useTranslations('ProjectDetail')
+  const tc = useTranslations('Common')
   const [investmentUrl, setInvestmentUrl] = useState<string | null>(null)
   const sectionTitle: CSSProperties = {
     fontFamily: 'var(--font-display)',
@@ -98,7 +112,15 @@ export const ProjectDetail = memo(function ProjectDetail({ project, detail, onIn
           <Badge tone="growth" icon={<ShieldCheckIcon />}>
             {t('verifiedSince', { since: detail.creator.since })}
           </Badge>
-          <WatchlistButton bondId={project.id} bondName={project.name} size="md" />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <YieldAlertButton
+              bondId={project.id}
+              bondName={project.name}
+              currentYield={(project.credit + project.green) / 2}
+              size="md"
+            />
+            <WatchlistButton bondId={project.id} bondName={project.name} size="md" />
+          </div>
         </div>
 
         {/* Project name, display font */}
@@ -458,7 +480,7 @@ export const ProjectDetail = memo(function ProjectDetail({ project, detail, onIn
                 textDecoration: 'none',
               }}
             >
-              {t('viewInvestment')}
+              {tc('viewInvestment')}
             </a>
           </div>
         )}
@@ -486,7 +508,7 @@ export const ProjectDetail = memo(function ProjectDetail({ project, detail, onIn
       </section>
     </main>
   )
-});
+})
 
 const ScoreColumn = memo(function ScoreColumn({
   value,
@@ -551,7 +573,7 @@ const ScoreColumn = memo(function ScoreColumn({
       </div>
     </div>
   )
-});
+})
 
 const sectionTitle: CSSProperties = {
   fontFamily: 'var(--font-display)',
