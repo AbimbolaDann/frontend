@@ -1,6 +1,11 @@
 import { type HTMLAttributes, type ReactNode } from 'react'
 
+/**
+ * Heliobond Card — standard container surface with consistent background,
+ * border-radius, border, shadow, and default padding.
+ */
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Elements to render inside the card container. */
   children: ReactNode
 }
 

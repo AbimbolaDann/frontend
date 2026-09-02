@@ -9,13 +9,19 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
+  /** Visual variant styling ('primary', 'secondary', or 'ghost'). Defaults to 'primary'. */
   variant?: ButtonVariant
+  /** Button sizing ('sm', 'md', or 'lg'). Defaults to 'md'. */
   size?: ButtonSize
+  /** Whether to render the button in a loading spinner state. Defaults to false. */
   loading?: boolean
   /** Plain-language reason shown in a tooltip when disabled. */
   reason?: string
+  /** Optional icon node rendered before the button text. */
   icon?: ReactNode
+  /** Optional icon node rendered after the button text. */
   iconRight?: ReactNode
+  /** Standard HTML button type ('button', 'submit', or 'reset'). Defaults to 'button'. */
   type?: 'button' | 'submit' | 'reset'
 }
 

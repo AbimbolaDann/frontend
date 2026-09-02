@@ -40,6 +40,7 @@ async function postJSON(url: string, body: unknown): Promise<any> {
   }
   return res.json()
 }
+
 export async function registerBiometric(username: string): Promise<any> {
   const options = await postJSON('/webauthn/register/begin', { username })
 

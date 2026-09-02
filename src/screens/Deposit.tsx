@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
+import { useState, useEffect, useRef, useCallback, type CSSProperties, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button, AmountInput, useToast } from '../components'
 import { Helio } from '../brand/Helio'
@@ -107,6 +107,66 @@ export function Deposit({ onDone }: DepositProps) {
     onDone()
   }
 
+  const handleSubmitDeposit = useCallback(async () => {
+    changeStep('pending')
+    setTxError(null)
+    markPending(n, address ?? '')
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    try {
+      const hash = await submitDeposit(n, address ?? '', sign, controller.signal)
+      if (mountedRef.current) {
+        clearPending()
+        setTxHash(hash)
+        changeStep('success')
+        toast({
+          tone: 'success',
+          title: 'Deposit confirmed',
+          message: `Successfully invested ${n} USDC in the pool.`,
+        })
+      }
+    } catch (e) {
+      if (mountedRef.current) {
+        if (e instanceof Error && e.message === 'Aborted') {
+          return
+        }
+        clearPending()
+        const errorMessage =
+          e instanceof Error ? getFriendlyErrorMessage(e.message) : 'Transaction failed — please try again.'
+        changeStep('amount')
+        toast({
+          tone: 'error',
+          title: 'Deposit failed',
+          message: errorMessage,
+          action: (
+            <button
+              type="button"
+              onClick={handleSubmitDeposit}
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--type-small)',
+                fontWeight: 600,
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-pill)',
+                border: 'none',
+                background: 'var(--ember)',
+                color: 'var(--surface)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Retry
+            </button>
+          ),
+        })
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+      }
+    }
+  }, [n, address, sign, markPending, clearPending, changeStep, toast])
+
   // Consolidate amount parsing with parseAmount helper (#417).
   const n = parseAmount(amount)
   const price = livePrice
@@ -118,23 +178,6 @@ export function Deposit({ onDone }: DepositProps) {
         return (
           <Panel>
             <h1 style={h1Style}>{t('amountH1')}</h1>
-            {txError && (
-              <div
-                role="alert"
-                style={{
-                  marginBottom: 14,
-                  padding: '10px 14px',
-                  borderRadius: 'var(--radius-input)',
-                  background: 'rgba(179,54,27,0.07)',
-                  border: '1px solid rgba(179,54,27,0.18)',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: 'var(--type-small)',
-                  color: 'var(--ember)',
-                }}
-              >
-                {getFriendlyErrorMessage(txError)}
-              </div>
-            )}
             <AmountInput
               value={amount}
               onChange={setAmount}
@@ -181,11 +224,7 @@ export function Deposit({ onDone }: DepositProps) {
                         Using estimated rate
                       </span>
                     )}
-                    {t.rich('preview', {
-                      shares: formatDecimal(n / price, 4),
-                      price: formatSharePrice(price),
-                      num,
-                    })}
+                    {t.rich('preview', { shares: formatDecimal(n / price, 4), price: formatSharePrice(price), num })}
                     <span
                       style={{
                         display: 'block',
@@ -416,54 +455,7 @@ export function Deposit({ onDone }: DepositProps) {
                 variant="primary"
                 size="lg"
                 style={{ flex: 1 }}
-                onClick={async () => {
-                  changeStep('pending')
-                  setTxError(null)
-                  // Mark this submission as in-flight so a retry after
-                  // timeout/abort shows a "still processing" warning (#433).
-                  markPending(n, address ?? '')
-                  const controller = new AbortController()
-                  abortControllerRef.current = controller
-                  try {
-                    const hash = await submitDeposit(n, address ?? '', sign, controller.signal)
-                    if (mountedRef.current) {
-                      setInvestmentId(hash)
-                      // Confirmed success — safe to clear the pending guard.
-                      clearPending()
-                      if (recurring) {
-                        saveRecurringInvestment({ bondId: 'HBS', amount: n, dayOfMonth: recurrenceDay })
-                      }
-                      changeStep('success')
-                      toast({
-                        tone: 'success',
-                        title: 'Deposit confirmed',
-                        message: `Successfully invested ${n} USDC in the pool.`,
-                        href: `/investments/${hash}`,
-                      })
-                    }
-                  } catch (e) {
-                    if (mountedRef.current) {
-                      if (e instanceof Error && e.message === 'Aborted') {
-                        // User cancelled or tab navigated away — the tx may
-                        // still be processing on-chain. Do NOT clear the guard
-                        // so the warning appears if they try again.
-                        return
-                      }
-                      // A confirmed on-chain failure — safe to clear.
-                      clearPending()
-                      setTxError(
-                        e instanceof Error
-                          ? getFriendlyErrorMessage(e.message)
-                          : 'Transaction failed — please try again.',
-                      )
-                      changeStep('amount')
-                    }
-                  } finally {
-                    if (abortControllerRef.current === controller) {
-                      abortControllerRef.current = null
-                    }
-                  }
-                }}
+                onClick={handleSubmitDeposit}
               >
                 {t('confirm')}
               </Button>

@@ -28,7 +28,8 @@ import { RegistryTable } from './RegistryTable'
 import { OracleForms } from './OracleForms'
 import { OFF_SCREEN_PROJECTS_COUNT } from '@/data'
 import { parseFundedNum } from './utils'
-import { formatMoney as sharedFormatMoney, formatSharePrice } from '@/lib/format'
+import { formatMoney as sharedFormatMoney } from '@/lib/format'
+import { formatSharePrice } from '@/wallet/vault'
 
 /**
  * AdminConsole — the internal admin / oracle surface. Same design system as the

@@ -6,12 +6,22 @@ import type {
   TextareaHTMLAttributes,
 } from 'react'
 
+/**
+ * Heliobond FormField — standardized wrapper providing consistent label,
+ * required indicator, optional hints, and bottom spacing for inputs.
+ */
 export interface FormFieldProps {
+  /** Whether the field is mandatory; displays a required indicator when true. */
   required?: boolean
+  /** Hint text shown when the field is optional (e.g. "(optional)"). */
   optionalHint?: string
+  /** Visible label text for the field. */
   label: string
+  /** HTML `id` of the wrapped input element for accessible label binding (`htmlFor`). */
   htmlFor?: string
+  /** Input control element rendered inside the field wrapper. */
   children: ReactNode
+  /** Custom inline style overrides. */
   style?: CSSProperties
   /**
    * Override the bottom margin applied to the field wrapper.
@@ -60,7 +70,9 @@ export function FormField({
   )
 }
 
+/** Props for the styled FormInput component. */
 export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
+  /** Optional custom inline CSS style overrides. */
   style?: CSSProperties
 }
 
@@ -68,7 +80,9 @@ export function FormInput(props: FormInputProps) {
   return <input {...props} style={{ ...inputBaseStyle, ...(props.style ?? {}) }} />
 }
 
+/** Props for the styled FormTextarea component. */
 export interface FormTextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  /** Optional custom inline CSS style overrides. */
   style?: CSSProperties
 }
 
@@ -81,7 +95,9 @@ export function FormTextarea(props: FormTextareaProps) {
   )
 }
 
+/** Props for the styled FormSelect component. */
 export interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  /** Optional custom inline CSS style overrides. */
   style?: CSSProperties
 }
 
