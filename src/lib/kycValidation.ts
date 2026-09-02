@@ -4,8 +4,8 @@
  * Accepts MM/DD/YYYY, MM-DD-YYYY, YYYY-MM-DD.
  */
 export interface DobValidationResult {
-  valid: boolean;
-  error?: string;
+  valid: boolean
+  error?: string
 }
 
 const DATE_REGEXES = [
@@ -41,49 +41,50 @@ function escapeHtml(value: string): string {
 }
 
 export function validateDobFormat(value: string): DobValidationResult {
-  const trimmed = value.trim();
-  if (!trimmed) return { valid: false, error: "Date of birth is required" };
-  const matches = DATE_REGEXES.some((r) => r.test(trimmed));
-  if (!matches) return { valid: false, error: "Use MM/DD/YYYY, MM-DD-YYYY or YYYY-MM-DD" };
-  const parsed = parseDob(trimmed);
-  if (!parsed) return { valid: false, error: "Invalid date" };
-  const { year, month, day } = parsed;
-  const date = new Date(year, month - 1, day);
+  const trimmed = value.trim()
+  if (!trimmed) return { valid: false, error: 'Date of birth is required' }
+  const matches = DATE_REGEXES.some((r) => r.test(trimmed))
+  if (!matches) return { valid: false, error: 'Use MM/DD/YYYY, MM-DD-YYYY or YYYY-MM-DD' }
+  const parsed = parseDob(trimmed)
+  if (!parsed) return { valid: false, error: 'Invalid date' }
+  const { year, month, day } = parsed
+  const date = new Date(year, month - 1, day)
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
-    return { valid: false, error: `Invalid calendar date: ${trimmed}` };
+    return { valid: false, error: `Invalid calendar date: ${trimmed}` }
   }
-  if (date > new Date()) return { valid: false, error: "Date cannot be in the future" };
-  const age = getAge(date);
-  if (age < 18) return { valid: false, error: "You must be at least 18 years old" };
-  if (age > 120) return { valid: false, error: "Please check the year" };
-  return { valid: true };
+  if (date > new Date()) return { valid: false, error: 'Date cannot be in the future' }
+  const age = getAge(date)
+  if (age < KYC_CONFIG.MIN_AGE)
+    return { valid: false, error: `You must be at least ${KYC_CONFIG.MIN_AGE} years old` }
+  if (age > KYC_CONFIG.MAX_AGE) return { valid: false, error: 'Please check the year' }
+  return { valid: true }
 }
 function parseDob(value: string): { year: number; month: number; day: number } | null {
-  const slash = value.includes("/");
-  const dash = value.includes("-");
+  const slash = value.includes('/')
+  const dash = value.includes('-')
   if (slash) {
-    const {m, d, y} = value.split("/").map(Number);
-    if (!m || !d || !y) return null;
-    return { year: y, month: m, day: d };
+    const [m, d, y] = value.split('/').map(Number)
+    if (!m || !d || !y) return null
+    return { year: y, month: m, day: d }
   }
   if (dash) {
-    const parts = value.split("-");
-    if (parts[0].length === 4) {
-      const [y, m, d] = parts.map(Number);
-      return { year: y, month: m, day: d };
+    const parts = value.split('-')
+    if (parts[0].length === KYC_CONFIG.YEAR_LENGTH) {
+      const [y, m, d] = parts.map(Number)
+      return { year: y, month: m, day: d }
     } else {
-      const [m, d, y] = parts.map(Number);
-      return { year: y, month: m, day: d };
+      const [m, d, y] = parts.map(Number)
+      return { year: y, month: m, day: d }
     }
   }
-  return null;
+  return null
 }
 function getAge(dob: Date): number {
-  const now = new Date();
-  let age = now.getFullYear() - dob.getFullYear();
-  const m = now.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
-  return age;
+  const now = new Date()
+  let age = now.getFullYear() - dob.getFullYear()
+  const m = now.getMonth() - dob.getMonth()
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--
+  return age
 }
 export function formatDobForDisplay(value: string): string {
   const trimmed = value.trim();
@@ -93,12 +94,27 @@ export function formatDobForDisplay(value: string): string {
   return `${String(month).padStart(2, "0") }/${String(day).padStart(2, "0") }/${year}`;
 }
 export interface AddressValues {
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-  country: string;
-  apartment?: string;
+  street: string
+  city: string
+  state: string
+  zip: string
+  country: string
+  apartment?: string
+}
+export type AddressErrors = Partial<Record<keyof AddressValues, string>>
+
+/**
+ * Validates address fields according to KYC requirements (#414).
+ * Single source of truth shared between component and schema.
+ */
+export function validateAddress(values: AddressValues): AddressErrors {
+  const errors: AddressErrors = {}
+  if (!values.street.trim()) errors.street = 'Street address is required'
+  if (!values.city.trim()) errors.city = 'City is required'
+  if (!values.state.trim()) errors.state = 'State is required'
+  if (!values.zip.trim()) errors.zip = 'ZIP code is required'
+  if (!values.country.trim()) errors.country = 'Country is required'
+  return errors
 }
 export type AddressErrors = Partial<Record<keyof AddressValues, string>>;
 

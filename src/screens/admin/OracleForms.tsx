@@ -3,6 +3,22 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button, FormField, FormInput, FormSelect, sanitizeAmount } from '@/components'
+import {
+  panelStyle,
+  textInput,
+  helpText,
+  gridStyle,
+  formRowStyle,
+  fieldGrowStyle,
+  inputGroupStyle,
+  dataCaptionStyle,
+  warningBoxStyle,
+  warningTextStyle,
+  moneyStyle,
+  panelTitleStyle,
+  panelHeaderStyle,
+  panelBodyStyle,
+} from '@/theme'
 import { type RegistryEntry } from '@/data/admin'
 import { clampScore, validateScores } from './utils'
 import { formatMoney, parseAmount } from '@/lib/format'
@@ -140,31 +156,17 @@ export function OracleForms({ projects, liquid, onPushScores, onFund }: OracleFo
                 borderColor: overLiquid ? 'var(--ember)' : undefined,
               }}
             />
-            <span style={dataCaptionStyle}>
-              USDC
-            </span>
+            <span style={dataCaptionStyle}>USDC</span>
           </div>
           {overLiquid && (
-            <div
-              role="status"
-              style={warningBoxStyle}
-            >
-              <p
-                style={warningTextStyle}
-              >
-                {t('fundExceeds')}
-              </p>
+            <div role="status" style={warningBoxStyle}>
+              <p style={warningTextStyle}>{t('fundExceeds')}</p>
             </div>
           )}
         </Field>
         <p style={helpText}>
-          {t('liquidHint')}{' '}
-          <span
-            style={moneyStyle}
-          >
-            ${formatMoney(liquid)}
-          </span>
-          . {amountN > liquid ? t('fundExceeds') : t('fundOk')}
+          {t('liquidHint')} <span style={moneyStyle}>${formatMoney(liquid)}</span>.{' '}
+          {amountN > liquid ? t('fundExceeds') : t('fundOk')}
         </p>
         <Button
           size="sm"
@@ -184,9 +186,7 @@ function Panel({ title, hint, children }: { title: string; hint: string; childre
   return (
     <div style={panelStyle}>
       <div style={panelHeaderStyle}>
-        <h3 style={panelTitleStyle}>
-          {title}
-        </h3>
+        <h3 style={panelTitleStyle}>{title}</h3>
         <p style={{ ...helpText, marginTop: 4 }}>{hint}</p>
       </div>
       <div style={panelBodyStyle}>{children}</div>
