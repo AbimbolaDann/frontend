@@ -56,7 +56,7 @@ export function ProjectCard({
   fundedAmount,
   action,
 }: ProjectCardProps) {
-  const [hver, setHover] = useState(false)
+  const [hover, setHover] = useState(false)
   const resolvedVerifiedLabel = verifiedLabel ?? verifiedAgo
   const showProgress =
     typeof fundedAmount === 'number' && typeof fundingGoal === 'number' && fundingGoal > 0

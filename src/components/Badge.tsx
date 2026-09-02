@@ -38,12 +38,16 @@ export function Badge({ tone = 'neutral', icon = null, children, style, ...rest 
       color: 'var(--ink-strong, #1a1a1a)',
       border: '1px solid var(--ember-strong, #b45309)',
     },
-    testnet: { background: 'var(--solar)', color: 'var(--ink-strong, #1a1a1a)', border: '1px solid transparent' },
+    testnet: {
+      background: 'var(--solar)',
+      color: 'var(--ink-strong, #1a1a1a)',
+      border: '1px solid transparent',
+    },
   }
 
   return (
     <span
-      style={
+      style={{
         display: 'inline-flex',
         alignItems: 'center',
         gap: 5,
@@ -58,7 +62,7 @@ export function Badge({ tone = 'neutral', icon = null, children, style, ...rest 
         whiteSpace: 'nowrap',
         ...tones[tone],
         ...style,
-      }
+      }}
       {...rest}
     >
       {icon}
