@@ -4,9 +4,8 @@ import { useEffect, useState, type CSSProperties } from 'react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ProjectCard, Tag, WatchlistButton } from '../components'
-import { Pagination } from '../components/Pagination'
 import { HB_DATA, type Project, type ProjectType } from '../data'
-import { getProjects } from '../lib/api'
+import { getProjectsPaginated } from '../lib/api'
 
 /**
  * Explore — a living atlas, not a shop. Grid of all registered projects with
@@ -23,7 +22,7 @@ const TYPES: (ProjectType | 'All')[] = ['All', 'Solar', 'Wind', 'Hydro']
  * every breakpoint (the grid runs 1–4 columns), so a page boundary never leaves
  * a ragged half-row.
  */
-const PAGE_SIZE = 6
+const PAGE_SIZE = 12
 
 export function Explore({ onOpen }: ExploreProps) {
   const t = useTranslations('Explore')
@@ -37,15 +36,14 @@ export function Explore({ onOpen }: ExploreProps) {
     urlType && ['Solar', 'Wind', 'Hydro'].includes(urlType) ? urlType : 'All',
   )
   const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
-    getProjects()
-      .then((data) => {
-        setProjects(data)
+    getProjectsPaginated(1, 50)
+      .then((res) => {
+        setProjects(res.projects)
       })
       .catch(() => {
-        setProjects(HB_DATA.projects)
+        setProjects(HB_DATA.projects.slice(0, 50))
         setApiError(true)
       })
       .finally(() => setLoading(false))
@@ -53,7 +51,7 @@ export function Explore({ onOpen }: ExploreProps) {
 
   const setFilterAndUrl = (next: ProjectType | 'All') => {
     setFilter(next)
-    setCurrentPage(1)
+    setVisibleCount(PAGE_SIZE)
     if (next === 'All') {
       router.replace('/explore', { scroll: false })
     } else {
@@ -66,15 +64,29 @@ export function Explore({ onOpen }: ExploreProps) {
   const shown = filteredByType.filter((p) =>
     p.name.toLowerCase().includes(query) || p.location.toLowerCase().includes(query),
   )
-  const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE))
-  const paged = shown.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const paged = shown.slice(0, visibleCount)
+  const remaining = shown.length - visibleCount
+  const nextChunk = Math.min(PAGE_SIZE, remaining)
 
   useEffect(() => {
-    setCurrentPage(1)
+    setVisibleCount(PAGE_SIZE)
   }, [filter, projects.length, searchTerm])
 
   return (
     <main id="main-content" style={{ maxWidth: 1320, margin: '0 auto', padding: '48px 32px 80px' }}>
+      <style>{`
+        .hb-projects-grid > * {
+          min-width: 0;
+        }
+        .hb-projects-grid * {
+          min-width: 0;
+          white-space: normal !important;
+          overflow-wrap: break-word !important;
+          word-break: break-word !important;
+          max-width: 100%;
+        }
+      `}</style>
       <div style={{ marginBottom: 28 }}>
         <h1
           style={{
@@ -228,13 +240,48 @@ export function Explore({ onOpen }: ExploreProps) {
                 ))}
           </div>
           {!loading && shown.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={shown.length}
-              pageSize={PAGE_SIZE}
-              onPageChange={setCurrentPage}
-            />
+            <div
+              style={{
+                marginTop: 36,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              <div
+                role="status"
+                aria-live="polite"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--type-small)',
+                  color: 'var(--ink-60)',
+                }}
+              >
+                {t('showingCount', { shown: paged.length, total: shown.length })}
+              </div>
+              {remaining > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                  style={{
+                    height: 44,
+                    padding: '0 24px',
+                    borderRadius: 'var(--radius-pill)',
+                    border: '1px solid var(--ink)',
+                    background: 'var(--surface)',
+                    color: 'var(--ink)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--type-small)',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'background var(--dur-press) var(--ease-out)',
+                  }}
+                >
+                  {t('loadMore', { count: nextChunk })}
+                </button>
+              )}
+            </div>
           )}
         </>
       )}

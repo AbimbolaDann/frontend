@@ -23,7 +23,8 @@ interface WalletContextValue {
   disconnect: () => void
   retry: () => Promise<void>
   sign: (xdr: string) => Promise<string>
-  network: 'TESTNET'
+  network: 'PUBLIC' | 'TESTNET'
+  setNetwork: (network: 'PUBLIC' | 'TESTNET') => void
 }
 
 const WalletContext = createContext<WalletContextValue | null>(null)
@@ -44,14 +45,18 @@ const DEMO_ADDRESS = 'GBQHWXVZ2K4M6N8P3R5T7W9YA2C4E6G8J3L5Q7S9U2X4Z6B8D1F3H59XQ'
 const CONNECT_TIMEOUT_MS = 15000
 const MAX_AUTO_RETRIES = 2
 
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const initedRef = useRef(false)
+const getInitialNetwork = (): 'PUBLIC' | 'TESTNET' =>
+  process.env.NEXT_PUBLIC_STELLAR_NETWORK?.toLowerCase() === 'testnet' ? 'TESTNET' : 'PUBLIC'
+
+export function WalletProvider({ children }: {children: ReactNode}) {
   const [address, setAddress] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
   const [isDemo, setIsDemo] = useState(false)
   const [restoring, setRestoring] = useState(true)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [network, setNetworkState] = useState<'PUBLIC' | 'TESTNET'>(getInitialNetwork)
+  const initedNetworkRef = useRef<'PUBLIC' | 'TESTNET' | null>(null)
 
   const persist = useCallback((addr: string, walletId: string) => {
     try {
@@ -62,13 +67,37 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const setNetwork = useCallback((n: 'PUBLIC' | 'TESTNET') => {
+    setNetworkState(n)
+    try {
+      localStorage.setItem('hb-network', n)
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  // Load saved network from localStorage after mount (avoids hydration mismatch)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('hb-network')
+      if (saved === 'PUBLIC' || saved === 'TESTNET') {
+        setNetworkState(saved)
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
   const ensureInit = useCallback(async () => {
-    if (initedRef.current) return
+    if (initedNetworkRef.current === network) return
     const { StellarWalletsKit, Networks } = await import('@creit.tech/stellar-wallets-kit')
     const { defaultModules } = await import('@creit.tech/stellar-wallets-kit/modules/utils')
-    StellarWalletsKit.init({ modules: defaultModules(), network: Networks.TESTNET })
-    initedRef.current = true
-  }, [])
+    StellarWalletsKit.init({
+      modules: defaultModules(),
+      network: network === 'TESTNET' ? Networks.TESTNET : Networks.PUBLIC,
+    })
+    initedNetworkRef.current = network
+  }, [network])
 
   useEffect(() => {
     let saved: string | null = null
@@ -166,12 +195,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       await ensureInit()
       const { StellarWalletsKit, Networks } = await import('@creit.tech/stellar-wallets-kit')
       const result = await StellarWalletsKit.signTransaction(xdr, {
-        networkPassphrase: Networks.TESTNET,
+        networkPassphrase: network === 'TESTNET' ? Networks.TESTNET : Networks.PUBLIC,
         address: address ?? undefined,
       })
       return result.signedTxXdr
     },
-    [isDemo, ensureInit, address],
+    [isDemo, ensureInit, address, network],
   )
 
   const disconnect = useCallback(() => {
@@ -205,7 +234,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         disconnect,
         retry,
         sign,
-        network: 'TESTNET',
+        network,
+        setNetwork,
       }}
     >
       {children}

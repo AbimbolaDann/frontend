@@ -1,11 +1,15 @@
 'use client'
 
-import { type CSSProperties, type ReactNode } from 'react'
+import { memo, type CSSProperties, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button, StatBlock, LiquidityMeter, Card } from '../components'
 import { Helio } from '../brand/Helio'
 import { HB_DATA } from '../data'
 import { useWallet } from '../wallet/WalletProvider'
+
+const MemoizedHelio = memo(Helio)
+
+const MemoizedLiquidityMeter = memo(LiquidityMeter)
 
 /**
  * Portfolio — calm dashboard. Headline value with delta since deposit, the
@@ -17,10 +21,12 @@ export interface PortfolioProps {
   onDeposit: () => void
 }
 
-export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
+export const Portfolio = memo(function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
   const t = useTranslations('Portfolio')
   const { connected, connect } = useWallet()
   const d = HB_DATA
+  const risk = { score: d.you.riskScore, level: d.you.riskLevel }
+  const referralLink = (d.you as { referralLink?: string }).referralLink
 
   if (!connected) {
     return (
@@ -76,10 +82,11 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
           </div>
           <StatBlock
             label={t('currentValue')}
-            value="$24,180"
-            decimals=".45"
-            delta={`+$612.18 (2.6%) ${t('sinceDeposit')} + $320 pending`}
+            value={`$${Math.floor(d.you.value).toLocaleString('en-US')}`}
+            decimals={`.${String(d.you.value).split('.')[1] ?? '00'}`}
+            delta={`+$${d.you.deltaAbs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${d.you.deltaPct}%) ${t('sinceDeposit')}`}
             size="lg"
+            stackOnMobile
           />
           <p
             style={{
@@ -94,7 +101,7 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Helio size={108} motes={d.you.backed} />
+          <MemoizedHelio size={108} motes={d.you.backed} />
           <div style={{ display: 'flex', gap: 10 }}>
             <Button variant="secondary" onClick={onWithdraw}>
               {t('withdraw')}
@@ -115,7 +122,7 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
           <StatBlock label={t('poolShare')} value="0.49" unit="%" size="md" />
         </Card>
         <Card style={{ padding: 22 }}>
-          <LiquidityMeter liquid={236} total={482} currency="$" showExplanation={false} />
+          <MemoizedLiquidityMeter liquid={236} total={482} currency="$" showExplanation={false} />
           <p
             style={{
               fontFamily: 'var(--font-body)',
@@ -128,6 +135,96 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
           </p>
         </Card>
       </div>
+
+      {/* Portfolio risk indicator from bond ratings mix */}
+      <Card style={{ padding: 22, marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+          <StatBlock
+            label="Portfolio risk"
+            value={risk.level[0].toUpperCase() + risk.level.slice(1)}
+            size="md"
+          />
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--type-small)',
+              lineHeight: 1.55,
+              color: 'var(--ink-60)',
+              margin: 0,
+            }}
+          >
+            Score: {risk.score}/100 based on bond ratings mix.
+          </p>
+        </div>
+      </Card>
+      {referralLink ? (
+        <Card style={{ padding: 22, marginBottom: 28 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 24,
+              flexWrap: 'wrap',
+            }}
+          >
+            <StatBlock label="Referral program" value={referralLink} size="sm" />
+            <Button
+              variant="secondary"
+              onClick={() => void navigator.clipboard?.writeText(referralLink)}
+            >
+              Share
+            </Button>
+          </div>
+        </Card>
+      ) : null}
+
+      {d.you.referralLink && (
+        <Card style={{ padding: 22, marginBottom: 28 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <h3 style={cardTitle}>{t('referralProgram')}</h3>
+              <p
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--type-small)',
+                  lineHeight: 1.55,
+                  color: 'var(--ink-60)',
+                  margin: '4px 0 0',
+                }}
+              >
+                {t('referralCaption')}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                readOnly
+                value={d.you.referralLink}
+                style={{
+                  flex: '1 1 280px',
+                  padding: '10px 14px',
+                  fontFamily: 'var(--font-data)',
+                  fontSize: 'var(--type-small)',
+                  background: 'var(--ink-04)',
+                  border: '1px solid var(--ink-12)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--ink)',
+                  outline: 'none',
+                }}
+              />
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  navigator.clipboard.writeText(d.you.referralLink ?? '')
+                }}
+              >
+                {t('copyLink')}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <div className="hb-portfolio-grid">
         {/* Impact */}
@@ -154,7 +251,7 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
         </Card>
 
         {/* Activity */}
-        <Card style={{ padding: 22 }}>
+        <Card style={{ minWidth: 0, padding: 22 }}>
           <div
             style={{
               display: 'flex',
@@ -181,17 +278,19 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                flexWrap: 'wrap',
                 padding: '12px 0',
                 borderTop: i ? '1px solid var(--ink-12)' : 'none',
               }}
             >
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <div
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: 'var(--type-small)',
                     fontWeight: 600,
                     color: 'var(--ink)',
+                    overflowWrap: 'anywhere',
                   }}
                 >
                   {a.kind}
@@ -233,7 +332,7 @@ export function Portfolio({ onWithdraw, onDeposit }: PortfolioProps) {
       </div>
     </main>
   )
-}
+})
 
 const cardTitle: CSSProperties = {
   fontFamily: 'var(--font-display)',

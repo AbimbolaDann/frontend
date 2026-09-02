@@ -9,7 +9,7 @@ import { getBondStatus, isBondAvailable } from '../lib/watchlist'
 import { useWatchlist } from '../watchlist/WatchlistProvider'
 
 /**
- * Watchlist — bonds a person is tracking without investing (issue #407). Same
+ * Watchlist -- bonds a person is tracking without investing (issue #407). Same
  * card grid as Explore, ordered by when each was saved, with a per-card
  * availability marker and an in-app note when saved bonds are open for funding.
  */
@@ -38,7 +38,10 @@ export function Watchlist({ onOpen }: WatchlistProps) {
   const availableCount = saved.filter(isBondAvailable).length
 
   return (
-    <main id="main-content" style={{ maxWidth: 1320, margin: '0 auto', padding: '48px 32px 80px' }}>
+    <main
+      id="main-content"
+      style={{ maxWidth: 1320, margin: '0 auto', padding: '48px 32px 80px' }}
+    >
       <div style={{ marginBottom: 28 }}>
         <h1
           style={{
@@ -79,7 +82,7 @@ export function Watchlist({ onOpen }: WatchlistProps) {
             color: 'var(--ink-60)',
           }}
         >
-          {t('availableBanner', { count: availableCount })}
+           {t('availableBanner', { count: availableCount })}
         </div>
       )}
 
@@ -128,7 +131,16 @@ export function Watchlist({ onOpen }: WatchlistProps) {
             {saved.map((p) => {
               const open = getBondStatus(p) === 'open'
               return (
-                <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div
+                  key={p.id}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    minWidth: 0,
+                    overflowWrap: 'break-word',
+                  }}
+                >
                   <div
                     style={{
                       display: 'flex',
@@ -144,18 +156,20 @@ export function Watchlist({ onOpen }: WatchlistProps) {
                     </Badge>
                     {!open && <span>{t('notYetAvailable')}</span>}
                   </div>
-                  <ProjectCard
-                    name={p.name}
-                    location={p.location}
-                    credit={p.credit}
-                    green={p.green}
-                    funded={p.funded}
-                    fundedLabel={t('cardFundedFromPool')}
-                    onOpen={() => onOpen(p)}
-                    fundingGoal={p.fundingGoal}
-                    fundedAmount={p.fundedAmount}
-                    action={<WatchlistButton bondId={p.id} bondName={p.name} />}
-                  />
+                  <div style={{ minWidth: 0, width: '100%' }}>
+                    <ProjectCard
+                      name={p.name}
+                      location={p.location}
+                      credit={p.credit}
+                      green={p.green}
+                      funded={p.funded}
+                      fundedLabel={t('cardFundedFromPool')}
+                      onOpen={() => onOpen(p)}
+                      fundingGoal={p.fundingGoal}
+                      fundedAmount={p.fundedAmount}
+                      action={<WatchlistButton bondId={p.id} bondName={p.name} />}
+                    />
+                  </div>
                 </div>
               )
             })}

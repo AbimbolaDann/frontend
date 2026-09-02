@@ -9,7 +9,7 @@ export function roundToDecimals(value: number, decimals: number): number {
   return Math.round((value + Number.EPSILON) * factor) / factor
 }
 
-/** Rounds to whole cents — the shared precision for on-screen USDC amounts (#369). */
+/** Rounds to whole cents … the shared precision for on-screen USDC amounts (#369). */
 export function roundToCents(value: number): number {
   return roundToDecimals(value, 2)
 }
@@ -21,6 +21,15 @@ export function roundToCents(value: number): number {
  */
 export function formatDecimal(value: number, decimals: number): string {
   return roundToDecimals(value, decimals).toFixed(decimals)
+}
+
+/**
+ * Formats the vault share price with the shared precision used everywhere
+ * the figure appears (deposit preview, admin stat cell, data source) so the
+ * same value reads identically across screens (#394).
+ */
+export function formatSharePrice(value: number): string {
+  return formatDecimal(value, 4)
 }
 
 /**
@@ -41,7 +50,7 @@ export function formatMoney(
     maximumFractionDigits: 0,
   })
   if (options?.includeSymbol) {
-    const symbol = options.symbol ?? '$'
+    const symbol = options?.symbol ?? '$'
     return `${symbol}${formatted}`
   }
   return formatted
@@ -70,3 +79,26 @@ export function parseAmount(value: string): number {
   return isNaN(num) ? 0 : roundToCents(num)
 }
 
+/** Data shape for the landing pool counters. */
+export interface PoolData {
+  totalAssets: number
+  projectsFunded: number
+  projectedRate: number
+}
+
+/**
+ * Formats the landing pool counters from the source data.
+ * This drives the live counters from `HB_DATA.pool` rather than
+ * hardcoded strings, preventing drift from the data source.
+ */
+export function formatPoolCounters(pool: PoolData): {
+  totalAssets: string
+  projectsFunded: string
+  projectedRate: string
+} {
+  return {
+    totalAssets: formatMoney(pool.totalAssets, { includeSymbol: true }),
+    projectsFunded: String(pool.projectsFunded),
+    projectedRate: formatDecimal(pool.projectedRate, 1),
+  }
+}

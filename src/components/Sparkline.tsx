@@ -1,9 +1,9 @@
-import { type CSSProperties } from 'react'
+import { memo, type CSSProperties } from 'react'
 
-/**
- * Heliobond Sparkline — a tiny presentational trend line. The path is drawn in
+ /**
+ * Heliobond Sparkline - a tiny presentational trend line. The path is drawn in
  * ink (it reads as the data, not decoration); only the last point gets a solar
- * dot, marking "now" — so the accent is a single highlight, never the line
+ * dot, marking "now" - so the accent is a single highlight, never the line
  * itself. SSR-safe and hookless: pure math from props.
  */
 export interface SparklineProps {
@@ -16,7 +16,7 @@ export interface SparklineProps {
   style?: CSSProperties
 }
 
-export function Sparkline({
+function Sparkline({
   points,
   width = 132,
   height = 36,
@@ -77,4 +77,19 @@ export function Sparkline({
   )
 }
 
-export default Sparkline
+function areEqual(prevProps: SparklineProps, nextProps: SparklineProps): boolean {
+  return (
+    prevProps.width === nextProps.width &&
+    prevProps.height === nextProps.height &&
+    prevProps.color === nextProps.color &&
+    prevProps['aria-label'] === nextProps['aria-label'] &&
+    prevProps.style === nextProps.style &&
+    prevProps.points.length === nextProps.points.length &&
+    prevProps.points.every((value, index) => value === nextProps.points[index])
+  )
+}
+
+const MemoizedSparkline = memo(Sparkline, areEqual)
+
+export { MemoizedSparkline as Sparkline }
+export default MemoizedSparkline

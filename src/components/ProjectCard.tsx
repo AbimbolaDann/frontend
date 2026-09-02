@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import {useState, type CSSProperties, type ReactNode } from 'react'
 import { ScoreGauge } from './ScoreGauge'
 import { PinIcon } from './icons'
 import { formatMoney } from '../lib/format'
@@ -23,7 +23,7 @@ export interface ProjectCardProps {
   style?: CSSProperties
   fundingGoal?: number
   fundedAmount?: number
-  /** Optional control pinned to the top-right of the hero (e.g. watchlist star). */
+  /** Optional control pinned to the top-right of the hiro (e.g. watchlist star). */
   action?: ReactNode
 }
 
@@ -64,6 +64,7 @@ export function ProjectCard({
         transform: hover && onOpen ? 'translateY(-2px)' : 'none',
         transition:
           'box-shadow var(--dur-modal) var(--ease-out), transform var(--dur-modal) var(--ease-out)',
+        minWidth: 0,
         ...style,
       }}
     >
@@ -111,6 +112,9 @@ export function ProjectCard({
             lineHeight: 1.2,
             margin: '0 0 14px',
             letterSpacing: '-0.01em',
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+            wordBreak: 'break-word',
           }}
         >
           {name}
@@ -156,11 +160,11 @@ export function ProjectCard({
                 <div
                   style={{
                     height: 6,
-                    borderRadius: 'var(--radius-pill)',
-                    background: 'var(--ink-06)',
-                    border: '1px solid var(--ink-12)',
-                    overflow: 'hidden',
-                  }}
+                      borderRadius: 'var(--radius-pill)',
+                      background: 'var(--ink-06)',
+                      border: '1px solid var(--ink-12)',
+                      overflow: 'hidden',
+                    }}
                 >
                   <div
                     style={{
@@ -173,12 +177,12 @@ export function ProjectCard({
                 <div
                   style={{
                     fontFamily: 'var(--font-data)',
-                    fontSize: 'var(--type-fine)',
-                    color: 'var(--ink-40)',
-                    marginTop: 4,
-                  }}
+                      fontSize: 'var(--type-fine)',
+                      color: 'var(--ink-40)',
+                      marginTop: 4,
+                    }}
                 >
-                  {fundedPct}% of {formatMoney(fundingGoal!})
+                  {fundedPct}% of {formatMoney(fundingGoal!)}
                 </div>
               </div>
             )}

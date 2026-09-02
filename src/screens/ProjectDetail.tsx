@@ -1,7 +1,16 @@
-import { type CSSProperties } from 'react'
+import { memo, useMemo, useState, type CSSProperties } from 'react'
 import { useTranslations } from 'next-intl'
-import { Badge, Button, PinIcon, ScoreGauge, ShieldCheckIcon, WatchlistButton } from '../components'
-import { Sparkline } from '../components/Sparkline'
+import {
+  Badge,
+  Button,
+  PinIcon,
+  ScoreGauge,
+  ShieldCheckIcon,
+  WatchlistButton,
+  YieldAlertButton,
+} from '../components'
+import { Sparkline as SparklineUnmemoized } from '../components/Sparkline'
+const Sparkline = memo(SparklineUnmemoized)
 import { formatMoney } from '../lib/format'
 
 import { type Project } from '../data'
@@ -16,12 +25,27 @@ import { type ProjectDetail as ProjectDetailData } from '../data/projectDetails'
 export interface ProjectDetailProps {
   project: Project
   detail: ProjectDetailData
-  onInvest: () => void
+  onInvest: () => Promise<string>
   onBack?: () => void
 }
 
-export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDetailProps) {
+export const ProjectDetail = memo(function ProjectDetail({
+  project,
+  detail,
+  onInvest,
+  onBack,
+}: ProjectDetailProps) {
   const t = useTranslations('ProjectDetail')
+  const tc = useTranslations('Common')
+  const [investmentUrl, setInvestmentUrl] = useState<string | null>(null)
+  const creditHistory = useMemo(
+    () => detail.scoreHistory.credit.map((p) => p.value),
+    [detail.scoreHistory.credit],
+  )
+  const greenHistory = useMemo(
+    () => detail.scoreHistory.green.map((p) => p.value),
+    [detail.scoreHistory.green],
+  )
   return (
     <main id="main-content" style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 96px' }}>
       {onBack && (
@@ -74,7 +98,15 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
           <Badge tone="growth" icon={<ShieldCheckIcon />}>
             {t('verifiedSince', { since: detail.creator.since })}
           </Badge>
-          <WatchlistButton bondId={project.id} bondName={project.name} size="md" />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <YieldAlertButton
+              bondId={project.id}
+              bondName={project.name}
+              currentYield={(project.credit + project.green) / 2}
+              size="md"
+            />
+            <WatchlistButton bondId={project.id} bondName={project.name} size="md" />
+          </div>
         </div>
 
         {/* Project name, display font */}
@@ -154,7 +186,7 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
           <ScoreColumn
             value={project.credit}
             label={t('creditLabel')}
-            history={detail.scoreHistory.credit.map((p) => p.value)}
+            history={creditHistory}
             sparkLabel={t('creditHistory')}
             onChainNote={t('onChainNote')}
             verifiedAgo={t('verifiedAgo')}
@@ -162,7 +194,7 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
           <ScoreColumn
             value={project.green}
             label={t('greenLabel')}
-            history={detail.scoreHistory.green.map((p) => p.value)}
+            history={greenHistory}
             sparkLabel={t('greenHistory')}
             onChainNote={t('onChainNote')}
             verifiedAgo={t('verifiedAgo')}
@@ -279,7 +311,14 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
                     marginTop: 2,
                   }}
                 >
-                  {event.hash} ↗
+                  <a
+                    href={`https://etherscan.io/tx/${event.hash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: 'inherit', textDecoration: 'none' }}
+                  >
+                    {event.hash} ↗
+                  </a>
                 </div>
               </div>
             </div>
@@ -339,9 +378,33 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
 
       {/* Primary CTA — honest pooled framing */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Button variant="primary" size="lg" onClick={onInvest} style={{ width: '100%' }}>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={async () => {
+            const url = await onInvest()
+            setInvestmentUrl(url)
+          }}
+          style={{ width: '100%' }}
+        >
           {t('investCta')}
         </Button>
+        {investmentUrl && (
+          <a
+            href={investmentUrl}
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--type-small)',
+              fontWeight: 600,
+              color: 'var(--brand)',
+              textDecoration: 'none',
+            }}
+          >
+            View investment →
+          </a>
+        )}
         <p
           style={{
             fontFamily: 'var(--font-body)',
@@ -353,6 +416,27 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
         >
           {t('investNote')}
         </p>
+        {investmentUrl && (
+          <div role="status">
+            <a
+              href={investmentUrl}
+              style={{
+                display: 'block',
+                padding: '14px 20px',
+                borderRadius: 'var(--radius-card)',
+                background: 'var(--growth)',
+                color: 'var(--surface)',
+                textAlign: 'center',
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--type-data)',
+                fontWeight: 700,
+                textDecoration: 'none',
+              }}
+            >
+              {tc('viewInvestment')}
+            </a>
+          </div>
+        )}
         {onBack && (
           <div style={{ textAlign: 'center' }}>
             <button
@@ -377,9 +461,9 @@ export function ProjectDetail({ project, detail, onInvest, onBack }: ProjectDeta
       </section>
     </main>
   )
-}
+})
 
-function ScoreColumn({
+const ScoreColumn = memo(function ScoreColumn({
   value,
   label,
   history,
@@ -442,7 +526,7 @@ function ScoreColumn({
       </div>
     </div>
   )
-}
+})
 
 const sectionTitle: CSSProperties = {
   fontFamily: 'var(--font-display)',

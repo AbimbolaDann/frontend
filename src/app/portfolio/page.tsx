@@ -16,8 +16,6 @@ function PortfolioRoute() {
 }
 
 export default function PortfolioPage() {
-  // Suspense wraps the guard because it reads useSearchParams to preserve the
-  // visitor's intent; without a boundary Next cannot prerender the shell.
   return (
     <Suspense fallback={null}>
       <RequireWallet>
