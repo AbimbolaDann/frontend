@@ -4,89 +4,82 @@
 import { HB_DATA, type Project } from '../data'
 import { PROJECT_DETAILS, type ProjectDetail } from '../data/projectDetails'
 
+class ApiError extends Error {
+	constructor(message: string) {
+		super(message)
+		this.name = 'ApiError'
+		this.stack = message
+	}
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export interface ProjectWithDetail {
-  project: Project
-  detail: ProjectDetail
+	project: Project
+	detail: ProjectDetail
 }
 
 export interface Investment {
-  id: number
-  projectId: number
-  amount: number
-  projectUrl: string
-  // Add other fields needed
-}
-
-/**
- * Validates that a value is a positive integer.
- * This helps prevent XSS and injection attacks via URL manipulation.
- */
-function isValidProjectId(id: unknown): id is number {
-  return typeof id === 'number' && Number.isInteger(id) && id > 0
-}
-
-/**
- * Validates that a value is a positive finite number.
- */
-function isValidAmount(amount: unknown): amount is number {
-  return typeof amount === 'number' && Number.isFinite(amount) && amount > 0
+	id: number
+	projectId: number
+	amount: number
+	projectUrl: string
+	// Add other fields as needed
 }
 
 export interface PaginatedProjectsResponse {
-  projects: Project[]
-  total: number
-  page: number
-  pageSize: number
-  hasMore: boolean
+	projects: Project[]
+	total: number
+	page: number
+	pageSize: number
+	hasMore: boolean
 }
 
 /**
  * Fetches a paginated/lazy chunk of bonds to optimize initial load time from 3-5s down to sub-second.
  */
 export async function getProjectsPaginated(page = 1, pageSize = 12): Promise<PaginatedProjectsResponse> {
-  if (!API_URL) {
-    const all = HB_DATA.projects
-    const start = (page - 1) * pageSize
-    const projects = all.slice(start, start + pageSize)
-    return {
-      projects,
-      total: all.length,
-      page,
-      pageSize,
-      hasMore: start + pageSize < all.length,
-    }
-  }
+	if (!API_URL) {
+		const all = HB_DATA.projects
+		const start = (page - 1) * pageSize
+		const projects = all.slice(start, start + pageSize)
+		return {
+			projects,
+			total: all.length,
+			page,
+			pageSize,
+			hasMore: start + pageSize < all.length,
+		}
+	}
 
-  try {
-    const res = await fetch(`${API_URL}/projects?page=${page}&limit=${pageSize}`)
-    if (!res.ok) throw new Error(`HTTP @${res.status}`)
-    const data = await res.json()
-    if (Array.isArray(data)) {
-      const start = (page - 1) * pageSize
-      return {
-        projects: data.slice(start, start + pageSize),
-        total: data.length,
-        page,
-        pageSize,
-        hasMore: start + pageSize < data.length,
-      }
-    }
-    return data as PaginatedProjectsResponse
-  } catch {
-    console.warn('[api] GET /projects paginated failed -- using local dataset chunk')
-    const all = HB_DATA.projects
-    const start = (page - 1) * pageSize
-    const projects = all.slice(start, start + pageSize)
-    return {
-      projects,
-      total: all.length,
-      page,
-      pageSize,
-      hasMore: start + pageSize < all.length,
-    }
-  }
+	try {
+		const res = await fetch(`${API_URL}/projects?page=${page}&limit=${pageSize}`)
+		if (!res.ok) throw new Error(`HTTP @${res.status}`)
+		const data = await res.json()
+		if (Array.isArray(data)) {
+			const start = (page - 1) * pageSize
+			return {
+				projects: data.slice(start, start + pageSize),
+				total: data.length,
+				page,
+				pageSize,
+				hasMore: start + pageSize < data.length,
+			}
+		}
+		return data as PaginatedProjectsResponse
+	} catch {
+		console.warn('[api] GET /projects paginated failed -- using local dataset chunk')
+		const all = HB_DATA.projects
+		const start = (page - 1) * pageSize
+		const projects = all.slice(start, start + pageSize)
+		return {
+			projects,
+			total: all.length,
+			page,
+			pageSize,
+			hasMore: start + pageSize < all.length,
+		}
+	}
 }
 
 export async function getProjects(): Promise<Project[]> {
@@ -102,13 +95,13 @@ export async function getProjects(): Promise<Project[]> {
 }
 
 export async function getProject(id: number): Promise<ProjectWithDetail | null> {
-  if (!isValidProjectId(id)) {
-    console.warn(`[api] Invalid project id: ${id}`)
-    return null
-  }
+	const mockProject = HB_DATA.projects.find((p) => p.id === id)
+	const mockDetail = PROJECT_DETAILS[id]
 
-  const mockProject = HB_DATA.projects.find((p) => p.id === id)
-  const mockDetail = PROJECT_DETAILS[id]
+	if (!API_URL) {
+		if (!mockProject || !mockDetail) return null
+		return { project: mockProject, detail: mockDetail }
+	}
 
   if (!API_URL) {
     if (!mockProject || !mockDetail) return null
@@ -164,10 +157,10 @@ export async function createInvestment(input: { projectId: number; amount: numbe
  * with a backend challenge, but for now we generate a random challenge locally.
  */
 export async function biometricLogin(): Promise<boolean> {
-  if (typeof window === 'undefined' || !window.PublicKeyCredential) {
-    console.warn('[api] Biometric login not supported on this device/browser')
-    return false
-  }
+	if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+		console.warn('[api] Biometric login not supported on this device/browser')
+		return false
+	}
 
   try {
     // Generate a random challenge (in production, this would come from the server)
