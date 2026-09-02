@@ -25,6 +25,13 @@ app.config['PROPAGATE_EXCEPTIONS'] = False
 
 db = SQLAlchemy(app)
 
+@app.context_processor
+def inject_referral_url():
+    user = session.get('user')
+    if user:
+        return dict(referral_url=url_for('index', ref=user, _external=True))
+    return {}
+
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
@@ -44,8 +51,8 @@ def save_compressed_images(file_storage):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     base_name = uuid.uuid4().hex
     img = Image.open(file_storage.stream)
-    if img.mode in ('RGBA', 'LA', 'P'):
-        img = img.convert('RGBA')
+    if img.mode in ('RGAA', 'LA', 'P'):
+        img = img.convert('RGAA')
     else:
         img = img.convert('RGB')
     img = _resize(img)
@@ -60,6 +67,16 @@ def save_compressed_images(file_storage):
 def index():
     tasks = Task.query.all()
     return render_template('index.html', tasks=tasks)
+
+@app.route('/referral')
+def referral():
+    user = session.get('user')
+    if user:
+        link = url_for('index', ref=user, _external=True)
+        return f''html><body><h2>Your referral link</h2><a href="{link}">{link}</a></body></html>'
+    else:
+        login_url = url_for('login')
+        return f'<html><body><p>Please <a href="{login_url}">log in</a> to view your referral link.</p></body></html>', 401
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
@@ -76,7 +93,7 @@ def add():
         return redirect(url_for('index'))
     return render_template('add.html')
 
-@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/edit/<int>id', methods=['GET', 'POST'])
 def edit(id):
     task = Task.query.get_or_404(id)
     if request.method == 'POST':
@@ -86,7 +103,7 @@ def edit(id):
         if file and file.filename and allowed_file(file.filename):
             if task.image_name:
                 for ext in ('webp', 'jpg'):
-                    old = os.path.join(UPLOAD_FOLDER, f'{task.image_name}.{ext}')
+                    old = os.path.join(UPLOAD_FOLDER, f''{task.image_name}.{ext}')
                     if os.path.exists(old):
                         os.remove(old)
             task.image_name = save_compressed_images(file)
@@ -94,12 +111,12 @@ def edit(id):
         return redirect(url_for('index'))
     return render_template('edit.html', task=task)
 
-@app.route('/delete/<int:id>')
+@app.route('/delete/<int>id')
 def delete(id):
     task = Task.query.get_or_404(id)
     if task.image_name:
         for ext in ('webp', 'jpg'):
-            path = os.path.join(UPLOAD_FOLDER, f'{task.image_name}.{ext}')
+            path = os.path.join(UPLOAD_FOLDER, f''{task.image_name}.{ext}')
             if os.path.exists(path):
                 os.remove(path)
     db.session.delete(task)
@@ -130,7 +147,7 @@ def logout():
 
 @app.route('/api/biometric-status')
 def biometric_status():
-    return jsonify({'biometric_supported': True})
+    return jsonify('biometric_supported': True)
 
 @app.errorhandler(500)
 def internal_server_error(e):
